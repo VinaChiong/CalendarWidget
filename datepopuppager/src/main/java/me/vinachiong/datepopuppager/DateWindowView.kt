@@ -7,8 +7,14 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
+import kotlinx.android.synthetic.main.layout_date_popup_pager.view.*
 import kotlinx.android.synthetic.main.layout_date_window_pager.view.*
+import kotlinx.android.synthetic.main.layout_date_window_pager.view.vp_date_popup_pager
+import me.vinachiong.datepopuppager.adapter.CategoryPagerAdapter
+import me.vinachiong.datepopuppager.adapter.DateWindowCategoryPagerAdapter
 import me.vinachiong.datepopuppager.adapter.ItemDetailPagerAdapter
+import me.vinachiong.datepopuppager.model.DateModel
+import me.vinachiong.datepopuppager.model.Mode
 
 /**
  *
@@ -19,6 +25,7 @@ import me.vinachiong.datepopuppager.adapter.ItemDetailPagerAdapter
 class DateWindowView: LinearLayout {
 
     private lateinit var mContext: Activity
+    private lateinit var viewPagerAdapter: DateWindowCategoryPagerAdapter
 
     constructor(context: Context?) : super(context) {
         initView()
@@ -38,6 +45,22 @@ class DateWindowView: LinearLayout {
         // 渲染layout布局
         LayoutInflater.from(context).inflate(R.layout.layout_date_window_pager, this)
 
+        val first = PagerAdapterManager.categoryYearAdapterList.first()
+        val last = PagerAdapterManager.categoryYearAdapterList.last()
+        val yearLabel = DateModel()
+        yearLabel.extraLabel = "${first.year}-${last.year}年"
+        viewPagerAdapter = DateWindowCategoryPagerAdapter(yearLabel,
+                                                PagerAdapterManager.categoryYearAdapterList,
+                                                PagerAdapterManager.currentSelectData!!,
+                                                PagerAdapterManager.currentMode)
+        PagerAdapterManager.addOnViewStatusChangedListeners(viewPagerAdapter)
+        vp_date_popup_pager.adapter = viewPagerAdapter
+        vp_date_popup_pager.apply {
+            val screenWidth = resources.displayMetrics.widthPixels
+            offscreenPageLimit = 2
+            pageMargin = screenWidth / 10 * 0
+        }
+
         rg_group.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.rb_for_year -> {
@@ -46,10 +69,7 @@ class DateWindowView: LinearLayout {
                     rb_for_month.setTextColor(Color.parseColor("#3399FF"))
                     iv_arrow_left.visibility = View.INVISIBLE
                     iv_arrow_right.visibility = View.INVISIBLE
-//                    DataConnection.currentMode = TYPE_YEAR
-//                    // RadiaButton 切换 按年、按月，不需要保存数据，仅通过eventListener刷新UI
-//                    eventListener.onViewStateChanged(DataConnection.currentYear, DataConnection.currentMonth,
-//                                                     TYPE_YEAR)
+                    PagerAdapterManager.dispatchOnModeChanged(Mode.YEAR_MODE)
                 }
                 R.id.rb_for_month -> {
                     // 提取可用年月份列表
@@ -57,32 +77,34 @@ class DateWindowView: LinearLayout {
                     rb_for_month.setTextColor(Color.WHITE)
                     iv_arrow_left.visibility = View.VISIBLE
                     iv_arrow_right.visibility = View.VISIBLE
-//                    DataConnection.currentMode = TYPE_MONTH
-//                    // RadiaButton 切换 按年、按月，不需要保存数据，仅通过eventListener刷新UI
-//                    eventListener.onViewStateChanged(DataConnection.currentYear, DataConnection.currentMonth,
-//                                                     TYPE_MONTH)
+                    PagerAdapterManager.dispatchOnModeChanged(Mode.MONTH_MODE)
                 }
             }
         }
+        when (PagerAdapterManager.currentMode) {
+            Mode.YEAR_MODE -> rb_for_year.isChecked = true
+            Mode.MONTH_MODE -> rb_for_month.isChecked = true
+        }
 
-        val popupViewPagerAdapter = ItemDetailPagerAdapter(PagerAdapterManager.categoryYearAdapterList,
+        val itemDetailPagerAdapter = ItemDetailPagerAdapter(PagerAdapterManager.categoryYearAdapterList,
                                                            PagerAdapterManager.popupPagerMonthData,
                                                            PagerAdapterManager.currentSelectData!!,
                                                            PagerAdapterManager.currentMode)
-        vp_grid.addOnPageChangeListener(popupViewPagerAdapter)
-        vp_grid.adapter = popupViewPagerAdapter
+        PagerAdapterManager.addOnViewStatusChangedListeners(itemDetailPagerAdapter)
+        vp_grid.addOnPageChangeListener(itemDetailPagerAdapter)
+        vp_grid.adapter = itemDetailPagerAdapter
 
         // 设置左右按钮的切换
         iv_arrow_left.setOnClickListener {
             val targetPos = vp_grid.currentItem - 1
-            if (targetPos in 0 until popupViewPagerAdapter.count) {
+            if (targetPos in 0 until itemDetailPagerAdapter.count) {
                 vp_grid.currentItem = targetPos
             }
         }
 
         iv_arrow_right.setOnClickListener {
             val targetPos = vp_grid.currentItem + 1
-            if (targetPos in 0 until popupViewPagerAdapter.count) {
+            if (targetPos in 0 until itemDetailPagerAdapter.count) {
                 vp_grid.currentItem = targetPos
             }
         }

@@ -1,13 +1,18 @@
 package me.vinachiong.datepopuppager.adapter
 
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.util.contains
+import androidx.core.util.forEach
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.SpaceDecorateItem
+import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 import org.jetbrains.anko.dip
@@ -22,7 +27,7 @@ internal class ItemDetailPagerAdapter(
     yearData: List<DateModel>,
     monthGroupData: Map<String, List<DateModel>>,
     selectModel: DateModel,
-    mode: Int = Mode.MONTH_MODE) : PagerAdapter(), ViewPager.OnPageChangeListener {
+    mode: Int = Mode.MONTH_MODE) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
 
     private var mMode: Int = Mode.MONTH_MODE
     private var mSelectedDateModel: DateModel = selectModel
@@ -43,7 +48,7 @@ internal class ItemDetailPagerAdapter(
 
         val dataSource:List<DateModel> = when (mMode) {
             Mode.YEAR_MODE ->  yearDataSource
-            else -> monthDataSource[mSelectedDateModel.year]?: listOf()
+            else -> monthDataSource[yearDataSource[position].year]?: listOf()
         }
 
         view.adapter = ItemDateModelRecyclerAdapter(dataSource)
@@ -68,8 +73,8 @@ internal class ItemDetailPagerAdapter(
 
     override fun getCount(): Int {
         return when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource.size
-            else -> monthDataSource.map {entry -> entry.key == mSelectedDateModel.year }.size
+            Mode.YEAR_MODE ->  1
+            else -> yearDataSource.size
         }
     }
 
@@ -84,5 +89,23 @@ internal class ItemDetailPagerAdapter(
     }
 
     override fun onPageSelected(position: Int) {
+        if (mMode == Mode.MONTH_MODE) {
+            PagerAdapterManager.dispatchOnMonthModeSwipeToYear(yearDataSource[position].year)
+        }
+    }
+
+    override fun onModeChanged(mode: Int) {
+        if (mMode != mode && (mode == Mode.MONTH_MODE || mode == Mode.YEAR_MODE)) {
+            mMode = mode
+            notifyDataSetChanged()
+        }
+    }
+
+    override fun onCategoryDateChanged(dateModel: DateModel) {
+
+    }
+
+    override fun onMonthModeSwipeToYear(year: String) {
+
     }
 }

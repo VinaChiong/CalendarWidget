@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewTreeObserver
 import android.widget.PopupWindow
@@ -106,7 +107,7 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
             val heightPixels: Int = screenHeight - parentLocationArr[1] - this.measuredHeight
             mPopupWindowDialog.height = heightPixels
         }
-        mPopupWindowDialog.showAsDropDown(this)
+        mPopupWindowDialog.showAtLocation(this, Gravity.TOP, 0, 0)
         windowAlphaAnimator.reverse()
     }
 

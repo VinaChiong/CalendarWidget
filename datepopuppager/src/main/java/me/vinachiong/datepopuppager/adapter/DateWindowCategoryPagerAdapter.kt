@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.updateLayoutParams
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
@@ -17,37 +18,33 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class CategoryPagerAdapter(
-    yearData: List<DateModel>,
+internal class DateWindowCategoryPagerAdapter(
+    private val yearData: DateModel,
     monthData: List<DateModel>,
     selectModel: DateModel,
     mode: Int = Mode.MONTH_MODE
 ): PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
-    private var yearDataSource = mutableListOf<DateModel>().also {
-        it.addAll(yearData)
-    }
-    private var monthDataSource = mutableListOf<DateModel>().also {
+    private var sourceForMonthMode = mutableListOf<DateModel>().also {
         it.addAll(monthData)
     }
     private var mSelectedDateModel: DateModel = selectModel
     private var mMode: Int = mode
 
     private lateinit var mHostView: ViewPager
-    private var yearSelectedPosition: Int = 0
     private var monthSelectedPosition: Int = 0
     var onItemClickListener: OnItemClickListener? = null
 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
         mHostView = container as ViewPager
+        mHostView.updateLayoutParams {
+            this.width = mHostView.context.resources.displayMetrics.widthPixels / 3
+        }
         calculateSelectPosition()
     }
 
     private fun calculateSelectPosition() {
-        yearSelectedPosition = yearDataSource.indexOfFirst {
-            it == mSelectedDateModel
-        }
-        monthSelectedPosition = monthDataSource.indexOfFirst {
+        monthSelectedPosition = sourceForMonthMode.indexOfFirst {
             it == mSelectedDateModel
         }
     }
@@ -69,8 +66,8 @@ internal class CategoryPagerAdapter(
         textView.textSize = 15f
 
         val data = when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource[position]
-            else -> monthDataSource[position]
+            Mode.YEAR_MODE ->  yearData
+            else -> sourceForMonthMode[position]
         }
         textView.text = data.label()
         textView.setOnClickListener {
@@ -94,7 +91,20 @@ internal class CategoryPagerAdapter(
     }
 
     override fun getPageWidth(position: Int): Float {
-        return if (count == 1) 1f else 0.33f
+        return 1f
+//        if (count == 1)
+//            return 1f
+//        return when {
+//            position == 0 -> {
+//                0.33f
+//            }
+//            position + 1 == count -> {
+//                0.33f
+//            }
+//            else -> {
+//                0.33f
+//            }
+//        }
     }
 
     fun switchMode(mode: Int) {
@@ -114,8 +124,8 @@ internal class CategoryPagerAdapter(
 
     override fun getCount(): Int {
         return when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource.size
-            else -> monthDataSource.size
+            Mode.YEAR_MODE ->  1
+            else -> sourceForMonthMode.size
         }
     }
 
@@ -142,6 +152,13 @@ internal class CategoryPagerAdapter(
     }
 
     override fun onMonthModeSwipeToYear(year: String) {
-
+        if (mMode == Mode.MONTH_MODE) {
+            val position = sourceForMonthMode.indexOfFirst {
+                it.year == year
+            }
+            if (position > -1) {
+                mHostView.currentItem = position
+            }
+        }
     }
 }

@@ -8,9 +8,11 @@ import me.vinachiong.datepopuppager.model.DateModel
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal interface OnViewStatusChangedListener {
+internal interface OnDateWindowViewChangedListener {
 
     fun onModeChanged(mode: Int)
 
     fun onCategoryDateChanged(dateModel: DateModel)
+
+    fun onMonthModeSwipeToYear(year: String)
 }

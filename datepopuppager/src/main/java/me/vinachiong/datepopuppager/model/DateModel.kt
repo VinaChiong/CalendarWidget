@@ -15,12 +15,13 @@ internal data class DateModel (
     var enable: Boolean = false,
     var checked: Boolean = false
 ) : ItemStatus {
+    var extraLabel: String = ""
 
     fun label(): String =
         when (type){
             Mode.YEAR_MODE -> "${year}年"
             Mode.MONTH_MODE -> "${year}年${month}月"
-            else ->""
+            else ->extraLabel
         }
 
     override fun isChecked(): Boolean = this.checked
@@ -36,5 +37,14 @@ internal data class DateModel (
             Mode.YEAR_MODE -> other.year == this.year
             else -> other.year == this.year && other.month == this.month
         }
+    }
+
+    override fun hashCode(): Int {
+        var result = year.hashCode()
+        result = 31 * result + month.hashCode()
+        result = 31 * result + type
+        result = 31 * result + enable.hashCode()
+        result = 31 * result + checked.hashCode()
+        return result
     }
 }

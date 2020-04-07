@@ -17,16 +17,14 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDateModelRecyclerAdapter(val dateModelList: List<DateModel>): RecyclerView.Adapter<ItemDateModelRecyclerAdapter.VH>() {
-    inner class VH(val view: RadioButton): RecyclerView.ViewHolder(view) {
+internal class ItemDateModelRecyclerAdapter(val dateModelList: List<DateModel>) : RecyclerView.Adapter<ItemDateModelRecyclerAdapter.VH>() {
+    inner class VH(val view: RadioButton) : RecyclerView.ViewHolder(view) {
         init {
             val width = view.context.dip(65)
             val height = view.context.dip(30)
-            view.layoutParams = RecyclerView.LayoutParams(
-                LinearLayout.LayoutParams(width, height).also {
-                    it.gravity = Gravity.CENTER
-                }
-                )
+            view.layoutParams = RecyclerView.LayoutParams(LinearLayout.LayoutParams(width, height).also {
+                it.gravity = Gravity.CENTER
+            })
             view.buttonDrawable = null
             view.setBackgroundResource(R.drawable.slt_date_sticker_popup_radio_btn)
             view.isChecked = false
@@ -45,12 +43,17 @@ internal class ItemDateModelRecyclerAdapter(val dateModelList: List<DateModel>):
     override fun onBindViewHolder(holder: VH, position: Int) {
         val data = dateModelList[position]
         holder.view.also {
-            it.text = when(data.type) {
+            it.text = when (data.type) {
                 Mode.YEAR_MODE -> data.year
                 else -> data.month
             }
             it.isEnabled = data.isEnabled()
             it.isChecked = data.isChecked()
+            if (it.isEnabled && !it.isChecked) {
+                it.setTextColor(Color.BLACK)
+            } else {
+                it.setTextColor(Color.WHITE)
+            }
         }
     }
 

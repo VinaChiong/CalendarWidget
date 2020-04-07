@@ -1,7 +1,10 @@
 package me.vinachiong.datepopuppager
 
+import android.util.SparseArray
 import androidx.core.text.isDigitsOnly
 import androidx.viewpager.widget.ViewPager
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
+import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 
@@ -29,6 +32,46 @@ internal object PagerAdapterManager: ViewPager.SimpleOnPageChangeListener() {
     internal val categoryMonthAdapterList = mutableListOf<DateModel>()
 
     internal val popupPagerMonthData = mutableMapOf<String, MutableList<DateModel>>()
+
+
+    private val onViewStatusChangedListeners =  mutableListOf<OnDateWindowViewChangedListener>()
+    private val onDateSelectedChangedListeners =  mutableListOf<OnDateSelectedChangedListener>()
+
+    fun addOnViewStatusChangedListeners(listenerDateWindow: OnDateWindowViewChangedListener) {
+        if (!onViewStatusChangedListeners.contains(listenerDateWindow)) {
+            onViewStatusChangedListeners.add(listenerDateWindow)
+        }
+    }
+
+    fun addOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
+        if (!onDateSelectedChangedListeners.contains(listener)) {
+            onDateSelectedChangedListeners.add(listener)
+        }
+    }
+
+    fun removeOnViewStatusChangedListeners(listenerDateWindow: OnDateWindowViewChangedListener) {
+        if (onViewStatusChangedListeners.contains(listenerDateWindow)) {
+            onViewStatusChangedListeners.remove(listenerDateWindow)
+        }
+    }
+
+    fun removeOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
+        if (onDateSelectedChangedListeners.contains(listener)) {
+            onDateSelectedChangedListeners.remove(listener)
+        }
+    }
+
+    fun dispatchOnModeChanged(mode: Int) {
+        onViewStatusChangedListeners.forEach {
+            it.onModeChanged(mode)
+        }
+    }
+
+    fun dispatchOnMonthModeSwipeToYear(year: String) {
+        onViewStatusChangedListeners.forEach {
+            it.onMonthModeSwipeToYear(year)
+        }
+    }
 
     fun initAdapterDate(startDate: String, endDate: String, defaultDate: String) {
         // 校验年份，只接受4位
