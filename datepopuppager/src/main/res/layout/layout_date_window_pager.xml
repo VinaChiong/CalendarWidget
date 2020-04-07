@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:background="#991a1a1a"-->
+<!--    android:orientation="vertical">-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white">
+
+        <RadioGroup
+            android:id="@+id/rg_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/vp_grid"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/rb_for_year"
+                android:layout_width="70dp"
+                android:layout_height="24dp"
+                android:background="@drawable/slt_receive_radio_button"
+                android:button="@null"
+                android:checked="true"
+                android:gravity="center"
+                android:text="按年"
+                android:textColor="@android:color/white"
+                android:textSize="13sp" />
+
+            <RadioButton
+                android:id="@+id/rb_for_month"
+                android:layout_width="70dp"
+                android:layout_height="24dp"
+                android:background="@drawable/slt_pay_radio_button"
+                android:button="@null"
+                android:checked="false"
+                android:gravity="center"
+                android:text="按月"
+                android:textColor="#3399FF"
+                android:textSize="13sp" />
+        </RadioGroup>
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/vp_grid"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/iv_arrow_left"
+            app:layout_constraintRight_toLeftOf="@+id/iv_arrow_right"
+            app:layout_constraintTop_toBottomOf="@+id/rg_group" />
+
+        <ImageView
+            android:id="@+id/iv_arrow_left"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/date_left"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@+id/vp_grid"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/vp_grid"
+            app:layout_constraintTop_toTopOf="@+id/vp_grid" />
+
+        <ImageView
+            android:id="@+id/iv_arrow_right"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/arrow_into"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@+id/vp_grid"
+            app:layout_constraintLeft_toRightOf="@+id/vp_grid"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/vp_grid" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+<!--</LinearLayout>-->

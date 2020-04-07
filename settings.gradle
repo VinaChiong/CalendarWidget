@@ -1,0 +1,3 @@
+rootProject.name='datesticker'
+include ':app'
+include ':datepopuppager'
