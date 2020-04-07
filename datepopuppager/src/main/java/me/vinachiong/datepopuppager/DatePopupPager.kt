@@ -7,10 +7,12 @@ import android.content.res.Resources
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.layout_date_popup_pager.view.*
 import me.vinachiong.datepopuppager.adapter.CategoryPagerAdapter
 import me.vinachiong.datepopuppager.model.DateModel
@@ -24,8 +26,15 @@ import me.vinachiong.datepopuppager.model.DateModel
 class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
 
     private lateinit var mContext: Activity
+
     // PopupWindow背景透明度动画
-    private lateinit var windowAlphaAnimator: ValueAnimator
+    private val windowAlphaAnimator: ValueAnimator =  ValueAnimator.ofFloat(ORIGINAL_ALPHA, TARGET_ALPHA).apply {
+        duration = 300
+        addUpdateListener { animation: ValueAnimator ->
+            mContext.window.attributes.alpha = animation.animatedValue as Float
+        }
+    }
+
     private lateinit var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener
 
 
@@ -49,15 +58,6 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         mContext = context as Activity
         // 渲染layout布局
         LayoutInflater.from(context).inflate(R.layout.layout_date_popup_pager, this)
-
-        // 初始化Animator
-        windowAlphaAnimator = ValueAnimator.ofFloat(ORIGINAL_ALPHA, TARGET_ALPHA).apply {
-            duration = 300
-            addUpdateListener { animation: ValueAnimator ->
-                mContext.window.attributes.alpha = animation.animatedValue as Float
-            }
-        }
-
 
         // 首次布局完成后，才进行组件初始化
         globalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener {
@@ -83,15 +83,34 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
                                                     PagerAdapterManager.currentMode)
             viewPagerAdapter.onItemClickListener = object: CategoryPagerAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, data: DateModel) {
-                    Toast.makeText(mContext, data.label(), Toast.LENGTH_LONG).show()
+                    Toast.makeText(mContext, data.label(), Toast.LENGTH_SHORT).show()
                     // TODO 通知外部
+                    if (position != vp_date_popup_pager.currentItem) {
+                        vp_date_popup_pager.currentItem = position
+                    }
                 }
             }
             vp_date_popup_pager.adapter = viewPagerAdapter
             vp_date_popup_pager.apply {
                 val screenWidth = resources.displayMetrics.widthPixels
+                updateLayoutParams<ViewGroup.LayoutParams> {
+                    width = screenWidth / 3
+                }
                 offscreenPageLimit = 2
                 pageMargin = screenWidth / 10 * 0
+            }
+
+            left_holder.setOnClickListener {
+                val targetPos = vp_date_popup_pager.currentItem - 1
+                if (targetPos in 0 until viewPagerAdapter.count) {
+                    vp_date_popup_pager.currentItem = targetPos
+                }
+            }
+            right_holder.setOnClickListener {
+                val targetPos = vp_date_popup_pager.currentItem + 1
+                if (targetPos in 0 until viewPagerAdapter.count) {
+                    vp_date_popup_pager.currentItem = targetPos
+                }
             }
         }
     }

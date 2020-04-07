@@ -5,6 +5,35 @@
     android:layout_height="55dp"
     android:clipChildren="false">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="1dp"
+        android:background="#0000"
+        android:weightSum="3">
+
+        <View
+            android:id="@+id/left_holder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="invisible" />
+
+        <View
+            android:id="@+id/right_holder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent" />
+
+    </LinearLayout>
+
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/vp_date_popup_pager"
         android:layout_width="match_parent"

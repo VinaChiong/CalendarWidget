@@ -32,29 +32,26 @@ internal class CategoryPagerAdapter(
     private var mSelectedDateModel: DateModel = selectModel
     private var mMode: Int = mode
 
-    private lateinit var mHostView: ViewPager
-    private var yearSelectedPosition: Int = 0
-    private var monthSelectedPosition: Int = 0
+
+//    private var yearSelectedPosition: Int = 0
+//    private var monthSelectedPosition: Int = 0
     var onItemClickListener: OnItemClickListener? = null
+    private lateinit var mHostView: ViewPager
 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
         mHostView = container as ViewPager
-        calculateSelectPosition()
+//        calculateSelectPosition()
     }
 
-    private fun calculateSelectPosition() {
-        yearSelectedPosition = yearDataSource.indexOfFirst {
-            it == mSelectedDateModel
-        }
-        monthSelectedPosition = monthDataSource.indexOfFirst {
-            it == mSelectedDateModel
-        }
-    }
-
-    override fun finishUpdate(container: ViewGroup) {
-        super.finishUpdate(container)
-    }
+//    private fun calculateSelectPosition() {
+//        yearSelectedPosition = yearDataSource.indexOfFirst {
+//            it == mSelectedDateModel
+//        }
+//        monthSelectedPosition = monthDataSource.indexOfFirst {
+//            it == mSelectedDateModel
+//        }
+//    }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
 
@@ -74,7 +71,6 @@ internal class CategoryPagerAdapter(
         }
         textView.text = data.label()
         textView.setOnClickListener {
-            mHostView.currentItem = position
             onItemClickListener?.onItemClick(position, data)
         }
         container.addView(textView)
@@ -91,10 +87,6 @@ internal class CategoryPagerAdapter(
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         container.removeView(`object` as View)
-    }
-
-    override fun getPageWidth(position: Int): Float {
-        return if (count == 1) 1f else 0.33f
     }
 
     fun switchMode(mode: Int) {
@@ -134,7 +126,7 @@ internal class CategoryPagerAdapter(
     }
 
     override fun onModeChanged(mode: Int) {
-        switchMode(mode)
+            switchMode(mode)
     }
 
     override fun onCategoryDateChanged(dateModel: DateModel) {

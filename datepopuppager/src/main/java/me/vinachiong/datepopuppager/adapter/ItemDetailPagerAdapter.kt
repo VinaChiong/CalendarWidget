@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.core.util.contains
 import androidx.core.util.forEach
+import androidx.core.view.updateLayoutParams
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
@@ -29,7 +31,8 @@ internal class ItemDetailPagerAdapter(
     selectModel: DateModel,
     mode: Int = Mode.MONTH_MODE) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
 
-    private var mMode: Int = Mode.MONTH_MODE
+    private var responseToClick = true
+    private var mMode: Int = mode
     private var mSelectedDateModel: DateModel = selectModel
     private var yearDataSource = mutableListOf<DateModel>().also {
         it.addAll(yearData)
@@ -39,6 +42,13 @@ internal class ItemDetailPagerAdapter(
         monthGroupData.forEach { entry ->
             it[entry.key] = entry.value
         }
+    }
+
+    private lateinit var mHostView: ViewPager
+
+    override fun startUpdate(container: ViewGroup) {
+        super.startUpdate(container)
+        mHostView = container as ViewPager
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
@@ -90,6 +100,7 @@ internal class ItemDetailPagerAdapter(
 
     override fun onPageSelected(position: Int) {
         if (mMode == Mode.MONTH_MODE) {
+            responseToClick = false
             PagerAdapterManager.dispatchOnMonthModeSwipeToYear(yearDataSource[position].year)
         }
     }
@@ -106,6 +117,17 @@ internal class ItemDetailPagerAdapter(
     }
 
     override fun onMonthModeSwipeToYear(year: String) {
-
+        if (!responseToClick) {
+            responseToClick = true
+        } else {
+            if (mMode == Mode.MONTH_MODE) {
+                val position = yearDataSource.indexOfFirst {
+                    it.year == year
+                }
+                if (position > -1) {
+                    mHostView.currentItem = position
+                }
+            }
+        }
     }
 }
