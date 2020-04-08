@@ -25,8 +25,6 @@ import me.vinachiong.datepopuppager.model.DateModel
  */
 class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
 
-    private lateinit var mContext: Activity
-
     // PopupWindow背景透明度动画
     private val windowAlphaAnimator: ValueAnimator =  ValueAnimator.ofFloat(ORIGINAL_ALPHA, TARGET_ALPHA).apply {
         duration = 300
@@ -34,7 +32,9 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
             mContext.window.attributes.alpha = animation.animatedValue as Float
         }
     }
-
+    private val manager: PagerAdapterManager = PagerAdapterManager()
+    private lateinit var mContext: Activity
+    private lateinit var mPopupWindowDialog: PopupWindowDialog
     private lateinit var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener
 
 
@@ -67,20 +67,17 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
 
             // 设置点击事件
             iv_expander.setOnClickListener {
-                dispatchShow()
+                dispatchShowDialog()
             }
         }
         this.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
     }
 
     fun initDateModel(startDate: String, endDate: String) {
-        PagerAdapterManager.initAdapterDate(startDate, endDate, startDate)
+        manager.initAdapterDate(startDate, endDate, startDate)
 
         if (!::viewPagerAdapter.isInitialized) {
-            viewPagerAdapter = CategoryPagerAdapter(PagerAdapterManager.categoryYearAdapterList,
-                                                    PagerAdapterManager.categoryMonthAdapterList,
-                                                    PagerAdapterManager.currentSelectData!!,
-                                                    PagerAdapterManager.currentMode)
+            viewPagerAdapter = CategoryPagerAdapter(manager)
             viewPagerAdapter.onItemClickListener = object: CategoryPagerAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, data: DateModel) {
                     Toast.makeText(mContext, data.label(), Toast.LENGTH_SHORT).show()
@@ -115,18 +112,16 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         }
     }
 
-    private lateinit var mPopupWindowDialog: PopupWindowDialog
-
-    fun dispatchShow() {
+    fun dispatchShowDialog() {
         if (!::mPopupWindowDialog.isInitialized) {
-            mPopupWindowDialog = PopupWindowDialog(mContext)
+            mPopupWindowDialog = PopupWindowDialog(mContext, manager)
             val parentLocationArr = IntArray(2)
             this.getLocationOnScreen(parentLocationArr)
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels
             val heightPixels: Int = screenHeight - parentLocationArr[1] - this.measuredHeight
             mPopupWindowDialog.height = heightPixels
         }
-        mPopupWindowDialog.showAtLocation(this, Gravity.TOP, 0, 0)
+        mPopupWindowDialog.showAsDropDown(this, Gravity.TOP, -this.measuredHeight, 0)
         windowAlphaAnimator.reverse()
     }
 
@@ -146,8 +141,5 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         private const val ORIGINAL_ALPHA = 1.0f
         /**  */
         private const val TARGET_ALPHA = 0.5f
-
-        const val TYPE_YEAR = 0
-        const val TYPE_MONTH = 1
     }
 }

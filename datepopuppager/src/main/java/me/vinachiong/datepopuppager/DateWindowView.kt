@@ -19,21 +19,32 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-class DateWindowView: LinearLayout {
+internal class DateWindowView: LinearLayout {
 
+    private lateinit var manager :PagerAdapterManager
     private lateinit var mContext: Activity
     private lateinit var viewPagerAdapter: DateWindowCategoryPagerAdapter
 
-    constructor(context: Context?) : super(context) {
+    constructor(context: Context?, manager: PagerAdapterManager) : super(context) {
+        this.manager = manager
         initView()
     }
 
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
-        initView()
     }
 
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        initView()
+    }
+
+    /**
+     *
+     * @param
+     */
+    fun setPagerAdapterManager(manager: PagerAdapterManager) {
+        if (!this::manager.isInitialized) {
+            this.manager = manager
+            initView()
+        }
     }
 
     private fun initView() {
@@ -51,13 +62,8 @@ class DateWindowView: LinearLayout {
      * 初始化弹窗的详情ViewPager
      */
     private fun initItemDetailViewPager() {
-        val itemDetailPagerAdapter = ItemDetailPagerAdapter(
-            PagerAdapterManager.categoryYearAdapterList,
-            PagerAdapterManager.popupPagerMonthData,
-            PagerAdapterManager.currentSelectData!!,
-            PagerAdapterManager.currentMode
-        )
-        PagerAdapterManager.addOnViewStatusChangedListeners(itemDetailPagerAdapter)
+        val itemDetailPagerAdapter = ItemDetailPagerAdapter(manager)
+        manager.addOnDateWindowViewChangedListeners(itemDetailPagerAdapter)
         vp_grid.addOnPageChangeListener(itemDetailPagerAdapter)
         vp_grid.adapter = itemDetailPagerAdapter
 
@@ -90,7 +96,7 @@ class DateWindowView: LinearLayout {
                     // 按年，只有单页，不需要切换Pager
                     iv_arrow_left.visibility = View.INVISIBLE
                     iv_arrow_right.visibility = View.INVISIBLE
-                    PagerAdapterManager.dispatchOnModeChanged(Mode.YEAR_MODE) // dispatch event
+                    manager.dispatchOnModeChanged(Mode.YEAR_MODE) // dispatch event
                 }
                 R.id.rb_for_month -> {
                     // 提取可用年月份列表
@@ -99,11 +105,11 @@ class DateWindowView: LinearLayout {
                     // 按月，可能多页，需要切换Pager
                     iv_arrow_left.visibility = View.VISIBLE
                     iv_arrow_right.visibility = View.VISIBLE
-                    PagerAdapterManager.dispatchOnModeChanged(Mode.MONTH_MODE) // dispatch event
+                    manager.dispatchOnModeChanged(Mode.MONTH_MODE) // dispatch event
                 }
             }
         }
-        when (PagerAdapterManager.currentMode) {
+        when (manager.currentMode) {
             Mode.YEAR_MODE -> rb_for_year.isChecked = true
             Mode.MONTH_MODE -> rb_for_month.isChecked = true
         }
@@ -113,21 +119,11 @@ class DateWindowView: LinearLayout {
      * 初始化目录ViewPager
      */
     private fun initCategoryViewPager() {
-        // 弹窗的目录ViewPager, 按年，仅需要一个DateModel
-        val first = PagerAdapterManager.categoryYearAdapterList.first()
-        val last = PagerAdapterManager.categoryYearAdapterList.last()
-        val yearLabel = DateModel()
-        yearLabel.extraLabel = "${first.year}-${last.year}年"
+
 
         // 弹窗的目录ViewPager, 按月，显示可选的年份
-        viewPagerAdapter = DateWindowCategoryPagerAdapter(
-            yearLabel,
-            PagerAdapterManager.categoryYearAdapterList,
-            PagerAdapterManager.currentSelectData!!,
-            PagerAdapterManager.currentMode
-        )
-        // 添加监听器，'按年'状态下，响应滑动切换年的事件
-        PagerAdapterManager.addOnViewStatusChangedListeners(viewPagerAdapter)
+        viewPagerAdapter = DateWindowCategoryPagerAdapter(manager)
+
 
         // 初始化ViewPager
         vp_date_popup_pager.adapter = viewPagerAdapter

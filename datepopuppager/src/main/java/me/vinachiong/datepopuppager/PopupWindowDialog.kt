@@ -11,10 +11,10 @@ import android.widget.PopupWindow
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-class PopupWindowDialog(context: Context) : PopupWindow() {
+internal class PopupWindowDialog(context: Context, manager: PagerAdapterManager) : PopupWindow() {
 
     init {
-        contentView = DateWindowView(context)
+        contentView = DateWindowView(context, manager)
         width = WindowManager.LayoutParams.MATCH_PARENT
         isFocusable = true
         isOutsideTouchable = false

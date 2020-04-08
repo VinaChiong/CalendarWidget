@@ -19,28 +19,34 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class DateWindowCategoryPagerAdapter(
+internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
     // 按年：数据源
-    private val yearData: DateModel,
-    monthData: List<DateModel>,
-    selectModel: DateModel,
-    mode: Int = Mode.MONTH_MODE
-): PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
-
+    private val yearData: DateModel
     // 按月：数据源
-    private var sourceForMonthMode = mutableListOf<DateModel>().also {
-        it.addAll(monthData)
-    }
+    private var sourceForMonthMode = mutableListOf<DateModel>()
     // 当前选中的日期
-    private var mSelectedDateModel: DateModel = selectModel
+    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
     // 当前的mode，控制Adapter的表现
-    private var mMode: Int = mode
-//    // 按月的选中位置
-//    private var monthSelectedPosition: Int = 0
+    private var mMode: Int = manager.currentMode
+
+    init {
+        // 弹窗的目录ViewPager, 按年，仅需要一个DateModel
+        val first = manager.categoryYearAdapterList.first()
+        val last = manager.categoryYearAdapterList.last()
+        val yearLabel = DateModel()
+        yearLabel.extraLabel = "${first.year}-${last.year}年"
+        yearData = yearLabel
+        sourceForMonthMode.addAll(manager.categoryYearAdapterList)
+
+        // 添加监听器，'按年'状态下，响应滑动切换年的事件
+        manager.addOnDateWindowViewChangedListeners(this)
+    }
+
+    private var responseToClick = true
+
     // 点击监听
     var onItemClickListener: OnItemClickListener? = null
 
-    private var responseToClick = true
 
     private lateinit var mHostView: ViewPager
 
@@ -60,26 +66,26 @@ internal class DateWindowCategoryPagerAdapter(
 //    }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
+        val textView = TextView(container.context).also {
+            it.layoutParams = ViewPager.LayoutParams().also { lp ->
+                lp.width = ViewPager.LayoutParams.WRAP_CONTENT
+                lp.height = ViewPager.LayoutParams.WRAP_CONTENT
+            }
+            it.gravity = Gravity.CENTER
+            it.setTextColor(Color.BLACK)
+            it.textSize = 15f
 
-        val context = container.context
-        val textView = TextView(context)
-        textView.layoutParams = ViewPager.LayoutParams().also {
-            it.width = ViewPager.LayoutParams.WRAP_CONTENT
-            it.height = ViewPager.LayoutParams.WRAP_CONTENT
+            val data = when (mMode) {
+                Mode.YEAR_MODE -> yearData
+                else -> sourceForMonthMode[position]
+            }
+            it.text = data.label()
+            it.setOnClickListener {
+                mHostView.currentItem = position
+                onItemClickListener?.onItemClick(position, data)
+            }
         }
-        textView.gravity = Gravity.CENTER
-        textView.setTextColor(Color.BLACK)
-        textView.textSize = 15f
 
-        val data = when (mMode) {
-            Mode.YEAR_MODE ->  yearData
-            else -> sourceForMonthMode[position]
-        }
-        textView.text = data.label()
-        textView.setOnClickListener {
-            mHostView.currentItem = position
-            onItemClickListener?.onItemClick(position, data)
-        }
         container.addView(textView)
         return textView
     }
@@ -113,7 +119,7 @@ internal class DateWindowCategoryPagerAdapter(
 
     override fun getCount(): Int {
         return when (mMode) {
-            Mode.YEAR_MODE ->  1
+            Mode.YEAR_MODE -> 1
             else -> sourceForMonthMode.size
         }
     }
@@ -131,7 +137,7 @@ internal class DateWindowCategoryPagerAdapter(
     override fun onPageSelected(position: Int) {
         if (mMode == Mode.MONTH_MODE) {
             responseToClick = false
-            PagerAdapterManager.dispatchOnMonthModeSwipeToYear(sourceForMonthMode[position].year)
+            manager.dispatchOnMonthModeSwipeToYear(sourceForMonthMode[position].year)
         }
     }
 

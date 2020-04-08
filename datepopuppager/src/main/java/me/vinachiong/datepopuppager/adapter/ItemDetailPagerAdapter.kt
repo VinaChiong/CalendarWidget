@@ -1,13 +1,8 @@
 package me.vinachiong.datepopuppager.adapter
 
-import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.core.util.contains
-import androidx.core.util.forEach
-import androidx.core.view.updateLayoutParams
-import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
@@ -25,22 +20,24 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDetailPagerAdapter(
-    yearData: List<DateModel>,
-    monthGroupData: Map<String, List<DateModel>>,
-    selectModel: DateModel,
-    mode: Int = Mode.MONTH_MODE) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
 
     private var responseToClick = true
-    private var mMode: Int = mode
-    private var mSelectedDateModel: DateModel = selectModel
-    private var yearDataSource = mutableListOf<DateModel>().also {
-        it.addAll(yearData)
-    }
-    private var monthDataSource = mutableMapOf<String, List<DateModel>>().also {
-        it.clear()
-        monthGroupData.forEach { entry ->
-            it[entry.key] = entry.value
+
+    private var yearDataSource = mutableListOf<DateModel>()
+    private var monthDataSource = mutableMapOf<String, List<DateModel>>()
+    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
+    private var mMode: Int = manager.currentMode
+
+    init {
+        yearDataSource.addAll(manager.categoryYearAdapterList)
+        monthDataSource.also {
+            it.clear()
+            manager.popupPagerMonthData.forEach { entry ->
+                it[entry.key] = entry.value
+            }
+
+            manager.addOnDateWindowViewChangedListeners(this)
         }
     }
 
@@ -53,21 +50,19 @@ internal class ItemDetailPagerAdapter(
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val view = RecyclerView(container.context)
-        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                                      LinearLayout.LayoutParams.MATCH_PARENT)
         view.layoutManager = GridLayoutManager(container.context, 4)
 
-        val dataSource:List<DateModel> = when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource
-            else -> monthDataSource[yearDataSource[position].year]?: listOf()
+        val dataSource: List<DateModel> = when (mMode) {
+            Mode.YEAR_MODE -> yearDataSource
+            else -> monthDataSource[yearDataSource[position].year] ?: listOf()
         }
 
         view.adapter = ItemDateModelRecyclerAdapter(dataSource)
-        view.addItemDecoration(SpaceDecorateItem(
-            container.context.dip(2),
-            container.context.dip(7),
-            container.context.dip(2),
-            container.context.dip(7)
-        ))
+        view.addItemDecoration(
+            SpaceDecorateItem(container.context.dip(2), container.context.dip(7), container.context.dip(2),
+                              container.context.dip(7)))
 
         container.addView(view)
         return view
@@ -83,7 +78,7 @@ internal class ItemDetailPagerAdapter(
 
     override fun getCount(): Int {
         return when (mMode) {
-            Mode.YEAR_MODE ->  1
+            Mode.YEAR_MODE -> 1
             else -> yearDataSource.size
         }
     }
@@ -101,7 +96,7 @@ internal class ItemDetailPagerAdapter(
     override fun onPageSelected(position: Int) {
         if (mMode == Mode.MONTH_MODE) {
             responseToClick = false
-            PagerAdapterManager.dispatchOnMonthModeSwipeToYear(yearDataSource[position].year)
+            manager.dispatchOnMonthModeSwipeToYear(yearDataSource[position].year)
         }
     }
 

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
@@ -17,24 +18,18 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class CategoryPagerAdapter(
-    yearData: List<DateModel>,
-    monthData: List<DateModel>,
-    selectModel: DateModel,
-    mode: Int = Mode.MONTH_MODE
-): PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
-    private var yearDataSource = mutableListOf<DateModel>().also {
-        it.addAll(yearData)
-    }
-    private var monthDataSource = mutableListOf<DateModel>().also {
-        it.addAll(monthData)
-    }
-    private var mSelectedDateModel: DateModel = selectModel
-    private var mMode: Int = mode
+internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+    private var yearDataSource = mutableListOf<DateModel>()
+    private var monthDataSource = mutableListOf<DateModel>()
+    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
+    private var mMode: Int = manager.currentMode
+    init {
+        yearDataSource.addAll(manager.categoryYearAdapterList)
+        monthDataSource.addAll(manager.categoryMonthAdapterList)
 
+        manager.addOnDateWindowViewChangedListeners(this)
+    }
 
-//    private var yearSelectedPosition: Int = 0
-//    private var monthSelectedPosition: Int = 0
     var onItemClickListener: OnItemClickListener? = null
     private lateinit var mHostView: ViewPager
 
@@ -66,7 +61,7 @@ internal class CategoryPagerAdapter(
         textView.textSize = 15f
 
         val data = when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource[position]
+            Mode.YEAR_MODE -> yearDataSource[position]
             else -> monthDataSource[position]
         }
         textView.text = data.label()
@@ -106,7 +101,7 @@ internal class CategoryPagerAdapter(
 
     override fun getCount(): Int {
         return when (mMode) {
-            Mode.YEAR_MODE ->  yearDataSource.size
+            Mode.YEAR_MODE -> yearDataSource.size
             else -> monthDataSource.size
         }
     }
@@ -126,7 +121,7 @@ internal class CategoryPagerAdapter(
     }
 
     override fun onModeChanged(mode: Int) {
-            switchMode(mode)
+        switchMode(mode)
     }
 
     override fun onCategoryDateChanged(dateModel: DateModel) {
