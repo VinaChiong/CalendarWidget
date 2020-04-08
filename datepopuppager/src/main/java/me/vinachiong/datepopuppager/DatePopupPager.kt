@@ -88,6 +88,7 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
                 }
             }
             vp_date_popup_pager.adapter = viewPagerAdapter
+            vp_date_popup_pager.addOnPageChangeListener(viewPagerAdapter)
             vp_date_popup_pager.apply {
                 val screenWidth = resources.displayMetrics.widthPixels
                 updateLayoutParams<ViewGroup.LayoutParams> {
