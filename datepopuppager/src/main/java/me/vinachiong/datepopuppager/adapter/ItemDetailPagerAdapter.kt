@@ -23,7 +23,8 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener, OnDateSelectedChangedListener {
+internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(),
+    ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener, OnDateSelectedChangedListener {
 
     private var responseToClick = true
     private var isFirstInit = true
@@ -35,6 +36,7 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     private val monthDataAdapters = SparseArray<ItemDateModelRecyclerAdapter>()
     private var yearDataAdapter: ItemDateModelRecyclerAdapter? = null
     private var lastCheckYearAdapterPosition = -1
+
     // 按月时候最后显示的页面index / last index of page that user swiped to in Mode.MONTH_MODE
     // Used to show last page of Mode.MONTH_MODE when switch from Mode.YEAR_MODE
     private var lastSwipeMonthPageItem = 0
@@ -44,14 +46,14 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.forEach { entry ->
             entry.value.forEachIndexed { index, dateModel ->
-                if (manager.currentYear == dateModel.year && manager.currentMonth == dateModel.month) {
+                if (manager.currentSelectData == dateModel) {
                     val yearIndex = yearDataSource.indexOfFirst { it.year == dateModel.year }
                     lastCheckYearAdapterPosition = yearIndex
                 }
             }
         }
         manager.addOnDateWindowViewChangedListeners(this)
-        manager.addOnDateSelectedChangedListener(this)
+//        manager.addOnDateSelectedChangedListener(this)
     }
 
     private lateinit var mHostView: ViewPager
@@ -72,8 +74,10 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val view = RecyclerView(container.context)
-        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                                      LinearLayout.LayoutParams.MATCH_PARENT)
+        view.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        )
         view.layoutManager = GridLayoutManager(container.context, 4)
 
         val adapter = when (manager.currentMode) {
@@ -81,7 +85,9 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
                 yearDataAdapter = it
             }
             else -> {
-                ItemDateModelRecyclerAdapter(monthDataSource[yearDataSource[position].year] ?: listOf(), manager).also {
+                ItemDateModelRecyclerAdapter(
+                    monthDataSource[yearDataSource[position].year] ?: listOf(), manager
+                ).also {
                     monthDataAdapters.put(position, it)
                 }
             }
@@ -89,8 +95,11 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
 
         view.adapter = adapter
         view.addItemDecoration(
-            SpaceDecorateItem(container.context.dip(2), container.context.dip(7), container.context.dip(2),
-                              container.context.dip(7)))
+            SpaceDecorateItem(
+                container.context.dip(2), container.context.dip(7), container.context.dip(2),
+                container.context.dip(7)
+            )
+        )
 
         container.addView(view)
         return view
@@ -137,6 +146,7 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     }
 
     override fun onMonthModeSwipeToYear(year: String) {
+        notifyDataSetChanged()
         if (!responseToClick) {
             responseToClick = true
         } else {
@@ -160,12 +170,37 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
             }
 
             Mode.MONTH_MODE -> {
+                // 切换到对应页面
                 val yearPosition = yearDataSource.indexOfFirst { it == dateModel }
                 if (yearPosition > -1) {
                     mHostView.currentItem = yearPosition
                 }
+
+                // 通知Category ViewPager，切换到对应页面
                 responseToClick = false
                 manager.dispatchOnMonthModeSwipeToYear(dateModel.year)
+            }
+        }
+    }
+
+    fun checkDataChanged() {
+        if (::mHostView.isInitialized) {
+
+            notifyDataSetChanged()
+            // TODO 切换到
+            when (manager.currentMode) {
+                Mode.YEAR_MODE -> {
+
+                }
+
+                Mode.MONTH_MODE -> {
+                    // 切换到对应页面
+                    val yearPosition =
+                        yearDataSource.indexOfFirst { it == manager.currentSelectData }
+                    if (yearPosition > -1) {
+                        mHostView.currentItem = yearPosition
+                    }
+                }
             }
         }
     }

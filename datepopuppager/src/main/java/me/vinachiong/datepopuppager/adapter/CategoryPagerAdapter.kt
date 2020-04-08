@@ -26,12 +26,13 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
     private var yearDataSource = mutableListOf<DateModel>()
     private var monthDataSource = mutableListOf<DateModel>()
     private var mMode = manager.currentMode
+    private var mCurrentDateModle: DateModel? = null
 
     init {
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.addAll(manager.categoryMonthAdapterList)
 
-        manager.addOnDateSelectedChangedListener(this)
+//        manager.addOnDateSelectedChangedListener(this)
     }
 
     var onItemClickListener: OnItemClickListener? = null
@@ -120,11 +121,15 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
                 when (mMode) {
                     Mode.YEAR_MODE -> {
                         val dateModel = yearDataSource[mHostView.currentItem]
-                        manager.dispatchOnCurrentDateModelChanged(dateModel)
+                        mCurrentDateModle = dateModel
+                        manager.currentSelectData = dateModel
+//                        manager.dispatchOnCurrentDateModelChanged(dateModel)
                     }
                     Mode.MONTH_MODE -> {
                         val dateModel = monthDataSource[mHostView.currentItem]
-                        manager.dispatchOnCurrentDateModelChanged(dateModel)
+                        mCurrentDateModle = dateModel
+//                        manager.dispatchOnCurrentDateModelChanged(dateModel)
+                        manager.currentSelectData = dateModel
                     }
                 }
                 notifyDataSetChanged()
@@ -150,6 +155,22 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
                 }
                 Mode.MONTH_MODE -> {
                     mHostView.currentItem = monthDataSource.indexOfFirst { it == dateModel }
+                }
+            }
+        }
+    }
+
+    fun checkDataChanged() {
+        // TODO 切换到
+        manager.currentSelectData?.also { dateModel->
+            if (dateModel != mCurrentDateModle) {
+                when (mMode) {
+                    Mode.YEAR_MODE -> {
+                        mHostView.currentItem = yearDataSource.indexOfFirst { it == dateModel }
+                    }
+                    Mode.MONTH_MODE -> {
+                        mHostView.currentItem = monthDataSource.indexOfFirst { it == dateModel }
+                    }
                 }
             }
         }

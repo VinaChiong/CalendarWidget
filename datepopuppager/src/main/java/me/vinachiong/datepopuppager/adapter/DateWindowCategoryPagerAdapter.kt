@@ -19,9 +19,11 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterManager) :
+    PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
     // 按年：数据源
     private val yearData: DateModel
+
     // 按月：数据源
     private var sourceForMonthMode = mutableListOf<DateModel>()
 
@@ -129,6 +131,29 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
                 }
                 if (position > -1) {
                     mHostView.currentItem = position
+                }
+            }
+        }
+    }
+
+    fun checkDataChanged() {
+        if (::mHostView.isInitialized) {
+
+            notifyDataSetChanged()
+
+            // TODO 切换到
+            when (manager.currentMode) {
+                Mode.YEAR_MODE -> {
+
+                }
+
+                Mode.MONTH_MODE -> {
+                    // 切换到对应页面
+                    val position =
+                        sourceForMonthMode.indexOfFirst { it == manager.currentSelectData }
+                    if (position > -1) {
+                        mHostView.currentItem = position
+                    }
                 }
             }
         }

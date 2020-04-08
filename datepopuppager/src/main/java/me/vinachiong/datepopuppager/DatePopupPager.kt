@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
-import android.widget.Toast
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.layout_date_popup_pager.view.*
 import me.vinachiong.datepopuppager.adapter.CategoryPagerAdapter
@@ -80,8 +79,6 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
             viewPagerAdapter = CategoryPagerAdapter(manager)
             viewPagerAdapter.onItemClickListener = object: CategoryPagerAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, data: DateModel) {
-                    Toast.makeText(mContext, data.label(), Toast.LENGTH_SHORT).show()
-                    // TODO 通知外部
                     if (position != vp_date_popup_pager.currentItem) {
                         vp_date_popup_pager.currentItem = position
                     }
@@ -116,6 +113,7 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
     fun dispatchShowDialog() {
         if (!::mPopupWindowDialog.isInitialized) {
             mPopupWindowDialog = PopupWindowDialog(mContext, manager)
+            mPopupWindowDialog.setOnDismissListener(this)
             val parentLocationArr = IntArray(2)
             this.getLocationOnScreen(parentLocationArr)
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels
@@ -123,11 +121,15 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
             mPopupWindowDialog.height = heightPixels
         }
         mPopupWindowDialog.showAsDropDown(this, Gravity.TOP, -this.measuredHeight, 0)
+        mPopupWindowDialog.onShow()
         windowAlphaAnimator.reverse()
     }
 
     override fun onDismiss() {
         windowAlphaAnimator.start()
+        if (::viewPagerAdapter.isInitialized) {
+            viewPagerAdapter.checkDataChanged()
+        }
     }
 
     fun dispatchDismiss() {

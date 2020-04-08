@@ -8,6 +8,7 @@ import android.widget.RadioButton
 import androidx.recyclerview.widget.RecyclerView
 import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.R
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
@@ -19,13 +20,17 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDateModelRecyclerAdapter(private val dateModelList: List<DateModel>, private val manager: PagerAdapterManager) : RecyclerView.Adapter<ItemDateModelRecyclerAdapter.VH>(), OnItemDateModelCheckedChangedListener {
+internal class ItemDateModelRecyclerAdapter(
+    private val dateModelList: List<DateModel>,
+    private val manager: PagerAdapterManager) : RecyclerView.Adapter<ItemDateModelRecyclerAdapter.VH>(),
+    OnItemDateModelCheckedChangedListener, OnDateSelectedChangedListener {
 
     private var currentCheckedData: DateModel? = null
     private val mDataMode = dateModelList.first().type
 
     init {
         manager.addOnItemDateModelCheckedChangedListeners(this)
+//        manager.addOnDateSelectedChangedListener(this)
     }
 
     inner class VH(val view: RadioButton) : RecyclerView.ViewHolder(view) {
@@ -82,15 +87,6 @@ internal class ItemDateModelRecyclerAdapter(private val dateModelList: List<Date
         }
     }
 
-    fun setUnchecked(position: Int) {
-        if (position in 0 until this.itemCount) {
-            val data = dateModelList[position]
-            if (data.isChecked()) {
-                data.checked = false
-                notifyItemChanged(position)
-            }
-        }
-    }
 
     override fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
         // 如果currentCheckedData is-not-null， 设置 checked = false
@@ -109,5 +105,29 @@ internal class ItemDateModelRecyclerAdapter(private val dateModelList: List<Date
             null
         }
         notifyDataSetChanged()
+    }
+
+    override fun onCurrentDateModelChanged(dateModel: DateModel) {
+        currentCheckedData?.checked = false
+        currentCheckedData = if (dateModelList.contains(dateModel)) {
+            dateModel.checked = true
+            // 属于当前Adapter的dateModel实例，缓存到currentCheckedData，用于下次反选
+            dateModel
+        } else if (mDataMode == Mode.YEAR_MODE && dateModel.type == Mode.MONTH_MODE) {
+            // 当前Adapter的是年份数据，且被点击的是月份数据
+            // 可以自动确定选中
+            val target = dateModelList.find { it.year == dateModel.year }
+            target?.checked = true
+            target
+        } else {
+            // 否则设置null
+            null
+        }
+        notifyDataSetChanged()
+
+    }
+
+    fun checkDataChanged() {
+        // TODO 切换到
     }
 }

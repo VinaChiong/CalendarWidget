@@ -15,10 +15,10 @@ import me.vinachiong.datepopuppager.model.DateModel
  * @version v1.0.0
  */
 internal class PopupWindowDialog(context: Context, private val manager: PagerAdapterManager) : PopupWindow(), OnItemDateModelCheckedChangedListener {
-
+    private val dateWindowView = DateWindowView(context, manager)
     init {
         manager.addOnItemDateModelCheckedChangedListeners(this)
-        contentView = DateWindowView(context, manager)
+        contentView = dateWindowView
         width = WindowManager.LayoutParams.MATCH_PARENT
         isFocusable = true
         isOutsideTouchable = false
@@ -29,4 +29,9 @@ internal class PopupWindowDialog(context: Context, private val manager: PagerAda
         manager.dispatchOnCurrentDateModelChanged(dateModel)
         dismiss()
     }
+
+    fun onShow() {
+        dateWindowView.checkDataChanged()
+    }
+
 }

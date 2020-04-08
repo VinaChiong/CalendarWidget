@@ -20,8 +20,6 @@ internal class PagerAdapterManager {
     /** 仅接受yyyyMM */
     internal var endDate: String = ""
 
-    internal var currentMonth: String = ""
-    internal var currentYear: String = ""
     internal var currentMode: Int = Mode.MONTH_MODE
         private set
     internal var currentSelectData: DateModel? = null
@@ -57,15 +55,16 @@ internal class PagerAdapterManager {
 
         this.startDate = startDate
         this.endDate = endDate
-        this.currentYear = defaultDate.year()
-        this.currentMonth = defaultDate.month()
+//        this.currentYear = defaultDate.year()
+//        this.currentMonth = defaultDate.month()
         this.canSwitchMode = canSwitchMode
 
         initCategoryYearPagerAdapter(startDate, endDate, defaultDate)
     }
 
     private fun initCategoryYearPagerAdapter(begin: String, end: String, defaultDate: String) {
-
+        val currentYear = defaultDate.year()
+        val currentMonth = defaultDate.month()
         val startYear = begin.year().toInt()
         val endYear = end.year().toInt()
         popupPagerMonthData.clear()
@@ -102,7 +101,7 @@ internal class PagerAdapterManager {
      */
     fun addOnDateWindowViewChangedListeners(listener: OnDateWindowViewChangedListener) {
         if (!onDateWindowViewChangedListeners.contains(listener)) {
-            onDateWindowViewChangedListeners.add(listener)
+            onDateWindowViewChangedListeners.add(0, listener)
         }
     }
 
@@ -111,9 +110,9 @@ internal class PagerAdapterManager {
      * @param listener OnDateSelectedChangedListener
      */
     fun addOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
-        if (!onDateSelectedChangedListeners.contains(listener)) {
-            onDateSelectedChangedListeners.add(listener)
-        }
+//        if (!onDateSelectedChangedListeners.contains(listener)) {
+//            onDateSelectedChangedListeners.add(0, listener)
+//        }
     }
 
     /**
@@ -122,7 +121,7 @@ internal class PagerAdapterManager {
      */
     fun addOnItemDateModelCheckedChangedListeners(listener: OnItemDateModelCheckedChangedListener) {
         if (!onItemDateModelCheckedChangedListeners.contains(listener)) {
-            onItemDateModelCheckedChangedListeners.add(listener)
+            onItemDateModelCheckedChangedListeners.add(0, listener)
         }
     }
 
@@ -163,8 +162,11 @@ internal class PagerAdapterManager {
 
     fun dispatchOnCurrentDateModelChanged(dateModel: DateModel) {
         if (currentSelectData != dateModel) {
+            currentSelectData?.checked = false
+            dateModel.checked = true
             currentSelectData = dateModel
-            onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
+//            onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
         }
     }
+
 }

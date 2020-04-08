@@ -23,6 +23,7 @@ internal class DateWindowView: LinearLayout {
     private lateinit var manager :PagerAdapterManager
     private lateinit var mContext: Activity
     private lateinit var viewPagerAdapter: DateWindowCategoryPagerAdapter
+    private lateinit var itemDetailPagerAdapter: ItemDetailPagerAdapter
 
     constructor(context: Context?, manager: PagerAdapterManager) : super(context) {
         this.manager = manager
@@ -61,7 +62,7 @@ internal class DateWindowView: LinearLayout {
      * 初始化弹窗的详情ViewPager
      */
     private fun initItemDetailViewPager() {
-        val itemDetailPagerAdapter = ItemDetailPagerAdapter(manager)
+        itemDetailPagerAdapter = ItemDetailPagerAdapter(manager)
         manager.addOnDateWindowViewChangedListeners(itemDetailPagerAdapter)
         vp_grid.addOnPageChangeListener(itemDetailPagerAdapter)
         vp_grid.adapter = itemDetailPagerAdapter
@@ -147,5 +148,10 @@ internal class DateWindowView: LinearLayout {
                 vp_date_popup_pager.currentItem = targetPos
             }
         }
+    }
+
+    fun checkDataChanged() {
+        viewPagerAdapter.checkDataChanged()
+        itemDetailPagerAdapter.checkDataChanged()
     }
 }
