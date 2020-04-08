@@ -1,13 +1,10 @@
 package me.vinachiong.sample.datepopuppager
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import me.vinachiong.sample.datepopuppager.R
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        date_popup_pager.initDateModel("201605", "201905")
+        date_popup_pager.initDateModel("201605", "201905", "201801", true)
 //        setSupportActionBar(toolbar)
 //
 //        fab.setOnClickListener { view ->

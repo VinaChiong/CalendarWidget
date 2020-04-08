@@ -3,14 +3,11 @@ package me.vinachiong.datepopuppager.adapter
 import android.graphics.Color
 import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.RadioButton
-import android.widget.RadioGroup
 import androidx.recyclerview.widget.RecyclerView
+import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.R
-import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
-import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 import org.jetbrains.anko.dip
@@ -23,7 +20,7 @@ import org.jetbrains.anko.dip
  */
 internal class ItemDateModelRecyclerAdapter(
     private val dateModelList: List<DateModel>,
-    var mOnCheckedChangedListener: OnItemDateModelCheckedChangedListener? = null
+    private val manager: PagerAdapterManager
 ) : RecyclerView.Adapter<ItemDateModelRecyclerAdapter.VH>() {
     inner class VH(val view: RadioButton) : RecyclerView.ViewHolder(view) {
         init {
@@ -54,9 +51,11 @@ internal class ItemDateModelRecyclerAdapter(
         val data = dateModelList[position]
         holder.view.also {
             it.setOnClickListener {view ->
-                data.checked = !data.checked
-                notifyItemChanged(position)
-                mOnCheckedChangedListener?.onCheckChanged(data, position, this)
+                if (!data.checked) {
+                    data.checked = !data.checked
+                    notifyItemChanged(position)
+                    manager.dispatchOnCheckChanged(data, position, this)
+                }
             }
 
             it.text = when (data.type) {

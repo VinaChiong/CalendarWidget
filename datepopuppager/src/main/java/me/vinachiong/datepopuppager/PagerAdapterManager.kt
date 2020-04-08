@@ -1,7 +1,9 @@
 package me.vinachiong.datepopuppager
 
+import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
 import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
+import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 
@@ -41,6 +43,10 @@ internal class PagerAdapterManager {
      * 选中的DateModel发生变化监听
      */
     private val onDateSelectedChangedListeners = mutableListOf<OnDateSelectedChangedListener>()
+    /**
+     * 选中的DateModel发生变化监听
+     */
+    private val onItemDateModelCheckedChangedListeners = mutableListOf<OnItemDateModelCheckedChangedListener>()
 
     fun initAdapterDate(startDate: String, endDate: String, defaultDate: String, canSwitchMode: Boolean = true) {
         // 校验年份，只接受4位
@@ -86,10 +92,9 @@ internal class PagerAdapterManager {
 
                 if (enable) categoryMonthAdapterList.add(data)
             }
-            popupPagerMonthData.put(year.toString(), monthList)
+            popupPagerMonthData[year.toString()] = monthList
         }
     }
-
 
     /**
      * 添加监听器
@@ -112,23 +117,41 @@ internal class PagerAdapterManager {
     }
 
     /**
-     * 移除监听器
-     * @param listener OnDateWindowViewChangedListener
+     * 添加监听器
+     * @param listener OnItemDateModelCheckedChangedListener
      */
-    fun removeOnViewStatusChangedListeners(listener: OnDateWindowViewChangedListener) {
-        if (onDateWindowViewChangedListeners.contains(listener)) {
-            onDateWindowViewChangedListeners.remove(listener)
+    fun addOnItemDateModelCheckedChangedListeners(listener: OnItemDateModelCheckedChangedListener) {
+        if (!onItemDateModelCheckedChangedListeners.contains(listener)) {
+            onItemDateModelCheckedChangedListeners.add(listener)
         }
     }
 
+//    /**
+//     * 移除监听器
+//     * @param listener OnDateWindowViewChangedListener
+//     */
+//    fun removeOnViewStatusChangedListeners(listener: OnDateWindowViewChangedListener) {
+//        if (onDateWindowViewChangedListeners.contains(listener)) {
+//            onDateWindowViewChangedListeners.remove(listener)
+//        }
+//    }
+//
+//    /**
+//     * 移除监听器
+//     * @param listener OnDateWindowViewChangedListener
+//     */
+//    fun removeOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
+//        if (onDateSelectedChangedListeners.contains(listener)) {
+//            onDateSelectedChangedListeners.remove(listener)
+//        }
+//    }
+
     /**
-     * 移除监听器
-     * @param listener OnDateWindowViewChangedListener
+     * 移除所有监听器
      */
-    fun removeOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
-        if (onDateSelectedChangedListeners.contains(listener)) {
-            onDateSelectedChangedListeners.remove(listener)
-        }
+    fun removeAllListeners() {
+        onDateWindowViewChangedListeners.clear()
+        onDateSelectedChangedListeners.clear()
     }
 
     /**
@@ -152,5 +175,13 @@ internal class PagerAdapterManager {
         onDateWindowViewChangedListeners.forEach {
             it.onMonthModeSwipeToYear(year)
         }
+    }
+
+    fun dispatchOnCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
+        onItemDateModelCheckedChangedListeners.forEach { it.onCheckChanged(dateModel, position, adapter) }
+    }
+
+    fun dispatchOnCurrentDateModelChanged(dateModel: DateModel) {
+        onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
     }
 }

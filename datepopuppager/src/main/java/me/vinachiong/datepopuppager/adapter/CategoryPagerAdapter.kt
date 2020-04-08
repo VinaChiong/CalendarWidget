@@ -19,9 +19,9 @@ import me.vinachiong.datepopuppager.model.Mode
  * @version v1.0.0
  */
 internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+
     private var yearDataSource = mutableListOf<DateModel>()
     private var monthDataSource = mutableListOf<DateModel>()
-    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
     init {
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.addAll(manager.categoryMonthAdapterList)

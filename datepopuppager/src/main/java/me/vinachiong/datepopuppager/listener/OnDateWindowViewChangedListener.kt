@@ -1,8 +1,5 @@
 package me.vinachiong.datepopuppager.listener
 
-import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
-import me.vinachiong.datepopuppager.model.DateModel
-
 /**
  * 控件状态变更监听器
  *

@@ -10,7 +10,6 @@ import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.layout_date_window_pager.view.*
 import me.vinachiong.datepopuppager.adapter.DateWindowCategoryPagerAdapter
 import me.vinachiong.datepopuppager.adapter.ItemDetailPagerAdapter
-import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 
 /**
@@ -124,11 +123,8 @@ internal class DateWindowView: LinearLayout {
      * 初始化目录ViewPager
      */
     private fun initCategoryViewPager() {
-
-
         // 弹窗的目录ViewPager, 按月，显示可选的年份
         viewPagerAdapter = DateWindowCategoryPagerAdapter(manager)
-
 
         // 初始化ViewPager
         vp_date_popup_pager.adapter = viewPagerAdapter

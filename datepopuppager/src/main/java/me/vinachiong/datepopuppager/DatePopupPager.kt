@@ -73,8 +73,8 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         this.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
     }
 
-    fun initDateModel(startDate: String, endDate: String) {
-        manager.initAdapterDate(startDate, endDate, startDate)
+    fun initDateModel(startDate: String, endDate: String, defaultDate: String, canSwitchMode: Boolean) {
+        manager.initAdapterDate(startDate, endDate, defaultDate, canSwitchMode)
 
         if (!::viewPagerAdapter.isInitialized) {
             viewPagerAdapter = CategoryPagerAdapter(manager)

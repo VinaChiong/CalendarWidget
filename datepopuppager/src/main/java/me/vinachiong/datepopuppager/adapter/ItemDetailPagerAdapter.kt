@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.core.util.contains
-import androidx.core.util.containsValue
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
@@ -27,10 +26,10 @@ import org.jetbrains.anko.dip
 internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener, OnItemDateModelCheckedChangedListener {
 
     private var responseToClick = true
+    private var isFirstInit = true
 
     private var yearDataSource = mutableListOf<DateModel>()
-    private var monthDataSource = mutableMapOf<String, List<DateModel>>()
-    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
+    private var monthDataSource = manager.popupPagerMonthData
 
     // 注意： monthDataAdapters.size == yearDataSource.size
     private val monthDataAdapters = SparseArray<ItemDateModelRecyclerAdapter>()
@@ -44,13 +43,19 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     private var lastSwipeMonthPageItem = 0
     init {
         yearDataSource.addAll(manager.categoryYearAdapterList)
-        monthDataSource.also {
-            it.clear()
-            manager.popupPagerMonthData.forEach { entry ->
-                it[entry.key] = entry.value
-            }
 
-            manager.addOnDateWindowViewChangedListeners(this)
+        manager.addOnItemDateModelCheckedChangedListeners(this)
+        manager.addOnDateWindowViewChangedListeners(this)
+
+        monthDataSource.forEach { entry ->
+            entry.value.forEachIndexed { index, dateModel ->
+                if (manager.currentYear == dateModel.year && manager.currentMonth == dateModel.month) {
+                    lastCheckMonthAdapterPosition = index
+
+                    val yearIndex = yearDataSource.indexOfFirst { it.year == dateModel.year }
+                    lastCheckYearAdapterPosition = yearIndex
+                }
+            }
         }
     }
 
@@ -59,6 +64,15 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
         mHostView = container as ViewPager
+        if(isFirstInit) mHostView.currentItem = lastCheckYearAdapterPosition
+    }
+
+    override fun finishUpdate(container: ViewGroup) {
+        super.finishUpdate(container)
+        if (isFirstInit) {
+            // 第一次初始化完毕，执行默认选中
+            isFirstInit = false
+        }
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
@@ -67,15 +81,15 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
                                                       LinearLayout.LayoutParams.MATCH_PARENT)
         view.layoutManager = GridLayoutManager(container.context, 4)
 
-        val dataSource: List<DateModel> = when (manager.currentMode) {
-            Mode.YEAR_MODE -> yearDataSource
-            else -> monthDataSource[yearDataSource[position].year] ?: listOf()
-        }
-
-        val adapter = ItemDateModelRecyclerAdapter(dataSource, this)
-        when (manager.currentMode) {
-            Mode.YEAR_MODE -> yearDataAdapter = adapter
-            else -> monthDataAdapters.put(position, adapter)
+        val adapter = when (manager.currentMode) {
+            Mode.YEAR_MODE -> ItemDateModelRecyclerAdapter(yearDataSource, manager).also {
+                yearDataAdapter = it
+            }
+            else -> {
+                ItemDateModelRecyclerAdapter(monthDataSource[yearDataSource[position].year] ?: listOf(), manager).also {
+                    monthDataAdapters.put(position, it)
+                }
+            }
         }
 
         view.adapter = adapter
@@ -128,7 +142,6 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     }
 
     override fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
-
         // Attention!!!
         // We can confirm which [year] item to be auto checked when user click [month] item in Mode.MONTH_MODE.
         // But not for [month] item while user click [year] item in Mode.YEAR_MODE
@@ -142,6 +155,9 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
             }
             Mode.MONTH_MODE -> {
                 // 反选选中的年item 和 月item
+                if (null == lastCheckMonthAdapter && monthDataAdapters.contains(lastCheckYearAdapterPosition)) {
+                    lastCheckMonthAdapter = monthDataAdapters[lastCheckYearAdapterPosition]
+                }
                 lastCheckMonthAdapter?.setUnchecked(lastCheckMonthAdapterPosition)
                 yearDataAdapter?.setUnchecked(lastCheckYearAdapterPosition)
 

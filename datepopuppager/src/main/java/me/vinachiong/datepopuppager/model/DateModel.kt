@@ -8,7 +8,7 @@ import me.vinachiong.datepopuppager.ItemStatus
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal data class DateModel (
+data class DateModel (
     var year: String = "",
     var month: String = "",
     var type: Int = -1,
