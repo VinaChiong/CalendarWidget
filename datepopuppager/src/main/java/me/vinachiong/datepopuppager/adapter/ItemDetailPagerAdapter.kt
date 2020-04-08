@@ -12,7 +12,6 @@ import androidx.viewpager.widget.ViewPager
 import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.SpaceDecorateItem
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
-import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 import org.jetbrains.anko.dip
@@ -23,7 +22,7 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener, OnItemDateModelCheckedChangedListener {
+internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
 
     private var responseToClick = true
     private var isFirstInit = true
@@ -31,27 +30,20 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     private var yearDataSource = mutableListOf<DateModel>()
     private var monthDataSource = manager.popupPagerMonthData
 
-    // 注意： monthDataAdapters.size == yearDataSource.size
+    //
     private val monthDataAdapters = SparseArray<ItemDateModelRecyclerAdapter>()
-    private var lastCheckMonthAdapter: ItemDateModelRecyclerAdapter? = null
-    private var lastCheckMonthAdapterPosition = -1
-
     private var yearDataAdapter: ItemDateModelRecyclerAdapter? = null
     private var lastCheckYearAdapterPosition = -1
     // 按月时候最后显示的页面index / last index of page that user swiped to in Mode.MONTH_MODE
     // Used to show last page of Mode.MONTH_MODE when switch from Mode.YEAR_MODE
     private var lastSwipeMonthPageItem = 0
+
     init {
-        yearDataSource.addAll(manager.categoryYearAdapterList)
-
-        manager.addOnItemDateModelCheckedChangedListeners(this)
         manager.addOnDateWindowViewChangedListeners(this)
-
+        yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.forEach { entry ->
             entry.value.forEachIndexed { index, dateModel ->
                 if (manager.currentYear == dateModel.year && manager.currentMonth == dateModel.month) {
-                    lastCheckMonthAdapterPosition = index
-
                     val yearIndex = yearDataSource.indexOfFirst { it.year == dateModel.year }
                     lastCheckYearAdapterPosition = yearIndex
                 }
@@ -64,7 +56,7 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
         mHostView = container as ViewPager
-        if(isFirstInit) mHostView.currentItem = lastCheckYearAdapterPosition
+        if (isFirstInit) mHostView.currentItem = lastCheckYearAdapterPosition
     }
 
     override fun finishUpdate(container: ViewGroup) {
@@ -140,48 +132,6 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
             mHostView.currentItem = lastSwipeMonthPageItem
         }
     }
-
-    override fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
-        // Attention!!!
-        // We can confirm which [year] item to be auto checked when user click [month] item in Mode.MONTH_MODE.
-        // But not for [month] item while user click [year] item in Mode.YEAR_MODE
-        when (manager.currentMode) {
-            Mode.YEAR_MODE -> {
-                // 反选选中的年item\
-                yearDataAdapter?.setUnchecked(lastCheckYearAdapterPosition)
-                // 当前选中的是年，无法确定要选中的月份
-                // mark yearPosition
-                lastCheckYearAdapterPosition = position
-            }
-            Mode.MONTH_MODE -> {
-                // 反选选中的年item 和 月item
-                if (null == lastCheckMonthAdapter && monthDataAdapters.contains(lastCheckYearAdapterPosition)) {
-                    lastCheckMonthAdapter = monthDataAdapters[lastCheckYearAdapterPosition]
-                }
-                lastCheckMonthAdapter?.setUnchecked(lastCheckMonthAdapterPosition)
-                yearDataAdapter?.setUnchecked(lastCheckYearAdapterPosition)
-
-                lastCheckMonthAdapter = adapter
-                lastCheckMonthAdapterPosition = position
-
-                // 当前选中的是月份，可以确定要选中年份
-                // 因为monthDataAdapters.size == yearDataAdapter.size
-                // 可以通过 yearDataSource index of dataMode.year , locate current checked yearPosition
-
-                val yearPosition = yearDataSource.indexOfFirst {
-                    it.year == dateModel.year
-                }
-
-                // set checked = true of data & notify change
-                yearDataSource[yearPosition].checked = true
-                yearDataAdapter?.notifyItemChanged(yearPosition)
-
-                // mark yearPosition
-                lastCheckYearAdapterPosition = yearPosition
-            }
-        }
-    }
-
 
     override fun onMonthModeSwipeToYear(year: String) {
         if (!responseToClick) {

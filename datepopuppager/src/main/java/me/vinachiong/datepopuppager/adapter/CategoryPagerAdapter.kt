@@ -1,6 +1,7 @@
 package me.vinachiong.datepopuppager.adapter
 
 import android.graphics.Color
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +9,7 @@ import android.widget.TextView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import me.vinachiong.datepopuppager.PagerAdapterManager
-import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
 
@@ -18,15 +19,16 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateSelectedChangedListener {
 
     private var yearDataSource = mutableListOf<DateModel>()
     private var monthDataSource = mutableListOf<DateModel>()
+    private var mMode = manager.currentMode
     init {
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.addAll(manager.categoryMonthAdapterList)
 
-        manager.addOnDateWindowViewChangedListeners(this)
+        manager.addOnDateSelectedChangedListener(this)
     }
 
     var onItemClickListener: OnItemClickListener? = null
@@ -48,7 +50,7 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
         textView.setTextColor(Color.BLACK)
         textView.textSize = 15f
 
-        val data = when (manager.currentMode) {
+        val data = when (mMode) {
             Mode.YEAR_MODE -> yearDataSource[position]
             else -> monthDataSource[position]
         }
@@ -72,19 +74,8 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
         container.removeView(`object` as View)
     }
 
-    fun switchMode(mode: Int) {
-            when (manager.currentMode) {
-                Mode.YEAR_MODE -> {
-                    notifyDataSetChanged()
-                }
-                Mode.MONTH_MODE -> {
-                    notifyDataSetChanged()
-                }
-            }
-    }
-
     override fun getCount(): Int {
-        return when (manager.currentMode) {
+        return when (mMode) {
             Mode.YEAR_MODE -> yearDataSource.size
             else -> monthDataSource.size
         }
@@ -100,15 +91,38 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
     }
 
+    private var responseToChangeEvent = true
     override fun onPageSelected(position: Int) {
-
+        when (mMode) {
+            Mode.YEAR_MODE -> {
+                val dateModel = yearDataSource[position]
+                manager.dispatchOnCurrentDateModelChanged(dateModel)
+            }
+            Mode.MONTH_MODE -> {
+                val dateModel = monthDataSource[position]
+                manager.dispatchOnCurrentDateModelChanged(dateModel)
+            }
+        }
     }
 
-    override fun onModeChanged(mode: Int) {
-        switchMode(mode)
-    }
+    override fun onCurrentDateModelChanged(dateModel: DateModel) {
+        Log.d("CategoryPagerAdapter", "onCurrentDateModelChanged - $dateModel")
+        if (!responseToChangeEvent) {
+            responseToChangeEvent = true
+        } else {
+            if (mMode != dateModel.type) {
+                mMode = dateModel.type
+                notifyDataSetChanged()
+            }
 
-    override fun onMonthModeSwipeToYear(year: String) {
-
+            when (mMode) {
+                Mode.YEAR_MODE -> {
+                    mHostView.currentItem = yearDataSource.indexOfFirst { it == dateModel }
+                }
+                Mode.MONTH_MODE -> {
+                    mHostView.currentItem = monthDataSource.indexOfFirst { it == dateModel}
+                }
+            }
+        }
     }
 }

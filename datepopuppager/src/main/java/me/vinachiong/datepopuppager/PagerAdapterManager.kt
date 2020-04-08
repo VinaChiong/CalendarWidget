@@ -126,26 +126,6 @@ internal class PagerAdapterManager {
         }
     }
 
-//    /**
-//     * 移除监听器
-//     * @param listener OnDateWindowViewChangedListener
-//     */
-//    fun removeOnViewStatusChangedListeners(listener: OnDateWindowViewChangedListener) {
-//        if (onDateWindowViewChangedListeners.contains(listener)) {
-//            onDateWindowViewChangedListeners.remove(listener)
-//        }
-//    }
-//
-//    /**
-//     * 移除监听器
-//     * @param listener OnDateWindowViewChangedListener
-//     */
-//    fun removeOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
-//        if (onDateSelectedChangedListeners.contains(listener)) {
-//            onDateSelectedChangedListeners.remove(listener)
-//        }
-//    }
-
     /**
      * 移除所有监听器
      */
@@ -182,6 +162,9 @@ internal class PagerAdapterManager {
     }
 
     fun dispatchOnCurrentDateModelChanged(dateModel: DateModel) {
-        onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
+        if (currentSelectData != dateModel) {
+            currentSelectData = dateModel
+            onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
+        }
     }
 }

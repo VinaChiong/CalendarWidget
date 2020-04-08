@@ -2,7 +2,6 @@ package me.vinachiong.datepopuppager
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
-import android.util.Log
 import android.view.WindowManager
 import android.widget.PopupWindow
 import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
@@ -15,7 +14,7 @@ import me.vinachiong.datepopuppager.model.DateModel
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class PopupWindowDialog(context: Context, manager: PagerAdapterManager) : PopupWindow(), OnItemDateModelCheckedChangedListener {
+internal class PopupWindowDialog(context: Context, private val manager: PagerAdapterManager) : PopupWindow(), OnItemDateModelCheckedChangedListener {
 
     init {
         manager.addOnItemDateModelCheckedChangedListeners(this)
@@ -27,8 +26,7 @@ internal class PopupWindowDialog(context: Context, manager: PagerAdapterManager)
     }
 
     override fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
-        Log.d("PopupWindowDialog", "$dateModel")
+        manager.dispatchOnCurrentDateModelChanged(dateModel)
         dismiss()
-        // TODO 通知数据变更
     }
 }

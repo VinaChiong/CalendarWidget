@@ -126,7 +126,7 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
     }
 
     override fun onDismiss() {
-
+        windowAlphaAnimator.start()
     }
 
     fun dispatchDismiss() {
