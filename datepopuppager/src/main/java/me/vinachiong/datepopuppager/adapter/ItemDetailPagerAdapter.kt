@@ -11,6 +11,7 @@ import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import me.vinachiong.datepopuppager.PagerAdapterManager
 import me.vinachiong.datepopuppager.SpaceDecorateItem
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 import me.vinachiong.datepopuppager.model.Mode
@@ -22,7 +23,7 @@ import org.jetbrains.anko.dip
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
+internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener, OnDateSelectedChangedListener {
 
     private var responseToClick = true
     private var isFirstInit = true
@@ -39,7 +40,7 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
     private var lastSwipeMonthPageItem = 0
 
     init {
-        manager.addOnDateWindowViewChangedListeners(this)
+
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.forEach { entry ->
             entry.value.forEachIndexed { index, dateModel ->
@@ -49,6 +50,8 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
                 }
             }
         }
+        manager.addOnDateWindowViewChangedListeners(this)
+        manager.addOnDateSelectedChangedListener(this)
     }
 
     private lateinit var mHostView: ViewPager
@@ -145,6 +148,24 @@ internal class ItemDetailPagerAdapter(private val manager: PagerAdapterManager) 
                     lastSwipeMonthPageItem = position
                     mHostView.currentItem = position
                 }
+            }
+        }
+    }
+
+    override fun onCurrentDateModelChanged(dateModel: DateModel) {
+        // 响应数据变更
+        when (dateModel.type) {
+            Mode.YEAR_MODE -> {
+
+            }
+
+            Mode.MONTH_MODE -> {
+                val yearPosition = yearDataSource.indexOfFirst { it == dateModel }
+                if (yearPosition > -1) {
+                    mHostView.currentItem = yearPosition
+                }
+                responseToClick = false
+                manager.dispatchOnMonthModeSwipeToYear(dateModel.year)
             }
         }
     }

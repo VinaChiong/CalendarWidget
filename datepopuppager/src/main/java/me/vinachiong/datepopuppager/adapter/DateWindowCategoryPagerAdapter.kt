@@ -24,8 +24,7 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
     private val yearData: DateModel
     // 按月：数据源
     private var sourceForMonthMode = mutableListOf<DateModel>()
-    // 当前选中的日期
-    private var mSelectedDateModel: DateModel = manager.currentSelectData!!
+
     init {
         // 弹窗的目录ViewPager, 按年，仅需要一个DateModel
         val first = manager.categoryYearAdapterList.first()
@@ -53,14 +52,7 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
         mHostView.updateLayoutParams {
             this.width = mHostView.context.resources.displayMetrics.widthPixels / 3
         }
-//        calculateSelectPosition()
     }
-
-//    private fun calculateSelectPosition() {
-//        monthSelectedPosition = sourceForMonthMode.indexOfFirst {
-//            it == mSelectedDateModel
-//        }
-//    }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val textView = TextView(container.context).also {
