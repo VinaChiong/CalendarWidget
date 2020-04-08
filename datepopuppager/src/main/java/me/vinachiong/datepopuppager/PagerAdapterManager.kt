@@ -21,7 +21,10 @@ internal class PagerAdapterManager {
     internal var currentMonth: String = ""
     internal var currentYear: String = ""
     internal var currentMode: Int = Mode.MONTH_MODE
+        private set
     internal var currentSelectData: DateModel? = null
+    internal var canSwitchMode = true
+        private set
 
     // 目录 年份列表
     internal val categoryYearAdapterList = mutableListOf<DateModel>()
@@ -39,7 +42,7 @@ internal class PagerAdapterManager {
      */
     private val onDateSelectedChangedListeners = mutableListOf<OnDateSelectedChangedListener>()
 
-    fun initAdapterDate(startDate: String, endDate: String, defaultDate: String) {
+    fun initAdapterDate(startDate: String, endDate: String, defaultDate: String, canSwitchMode: Boolean = true) {
         // 校验年份，只接受4位
         require(!(!startDate.isKjqj() || !endDate.isKjqj() || !defaultDate.isKjqj())) { "Not a kjqj value" }
         // 起始年份的大小关系校验
@@ -50,6 +53,7 @@ internal class PagerAdapterManager {
         this.endDate = endDate
         this.currentYear = defaultDate.year()
         this.currentMonth = defaultDate.month()
+        this.canSwitchMode = canSwitchMode
 
         initCategoryYearPagerAdapter(startDate, endDate, defaultDate)
     }
@@ -132,8 +136,11 @@ internal class PagerAdapterManager {
      * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
      */
     fun dispatchOnModeChanged(mode: Int) {
-        onDateWindowViewChangedListeners.forEach {
-            it.onModeChanged(mode)
+        if (currentMode != mode && (mode == Mode.YEAR_MODE || mode == Mode.MONTH_MODE)) {
+            currentMode = mode
+            onDateWindowViewChangedListeners.forEach {
+                it.onModeChanged(mode)
+            }
         }
     }
 

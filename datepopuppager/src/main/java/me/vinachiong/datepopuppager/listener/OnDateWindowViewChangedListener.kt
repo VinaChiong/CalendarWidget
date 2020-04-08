@@ -1,5 +1,6 @@
 package me.vinachiong.datepopuppager.listener
 
+import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
 import me.vinachiong.datepopuppager.model.DateModel
 
 /**
@@ -9,10 +10,13 @@ import me.vinachiong.datepopuppager.model.DateModel
  * @version v1.0.0
  */
 internal interface OnDateWindowViewChangedListener {
-
+    /**
+     * 按年，按月切换
+     */
     fun onModeChanged(mode: Int)
 
-    fun onCategoryDateChanged(dateModel: DateModel)
-
+    /**
+     * 按月，切换显示年份
+     */
     fun onMonthModeSwipeToYear(year: String)
 }

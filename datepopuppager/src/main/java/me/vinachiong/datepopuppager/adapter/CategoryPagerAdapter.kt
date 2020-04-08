@@ -22,7 +22,6 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
     private var yearDataSource = mutableListOf<DateModel>()
     private var monthDataSource = mutableListOf<DateModel>()
     private var mSelectedDateModel: DateModel = manager.currentSelectData!!
-    private var mMode: Int = manager.currentMode
     init {
         yearDataSource.addAll(manager.categoryYearAdapterList)
         monthDataSource.addAll(manager.categoryMonthAdapterList)
@@ -36,18 +35,7 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
         mHostView = container as ViewPager
-//        calculateSelectPosition()
     }
-
-//    private fun calculateSelectPosition() {
-//        yearSelectedPosition = yearDataSource.indexOfFirst {
-//            it == mSelectedDateModel
-//        }
-//        monthSelectedPosition = monthDataSource.indexOfFirst {
-//            it == mSelectedDateModel
-//        }
-//    }
-
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
 
         val context = container.context
@@ -60,7 +48,7 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
         textView.setTextColor(Color.BLACK)
         textView.textSize = 15f
 
-        val data = when (mMode) {
+        val data = when (manager.currentMode) {
             Mode.YEAR_MODE -> yearDataSource[position]
             else -> monthDataSource[position]
         }
@@ -85,22 +73,18 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
     }
 
     fun switchMode(mode: Int) {
-        if (mMode != mode) {
-            when (mode) {
+            when (manager.currentMode) {
                 Mode.YEAR_MODE -> {
-                    mMode = mode
                     notifyDataSetChanged()
                 }
                 Mode.MONTH_MODE -> {
-                    mMode = mode
                     notifyDataSetChanged()
                 }
             }
-        }
     }
 
     override fun getCount(): Int {
-        return when (mMode) {
+        return when (manager.currentMode) {
             Mode.YEAR_MODE -> yearDataSource.size
             else -> monthDataSource.size
         }
@@ -122,10 +106,6 @@ internal class CategoryPagerAdapter(private val manager: PagerAdapterManager) : 
 
     override fun onModeChanged(mode: Int) {
         switchMode(mode)
-    }
-
-    override fun onCategoryDateChanged(dateModel: DateModel) {
-
     }
 
     override fun onMonthModeSwipeToYear(year: String) {

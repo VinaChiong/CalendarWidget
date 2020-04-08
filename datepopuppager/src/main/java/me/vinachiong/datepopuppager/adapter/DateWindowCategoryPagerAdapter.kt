@@ -26,9 +26,6 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
     private var sourceForMonthMode = mutableListOf<DateModel>()
     // 当前选中的日期
     private var mSelectedDateModel: DateModel = manager.currentSelectData!!
-    // 当前的mode，控制Adapter的表现
-    private var mMode: Int = manager.currentMode
-
     init {
         // 弹窗的目录ViewPager, 按年，仅需要一个DateModel
         val first = manager.categoryYearAdapterList.first()
@@ -75,7 +72,7 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
             it.setTextColor(Color.BLACK)
             it.textSize = 15f
 
-            val data = when (mMode) {
+            val data = when (manager.currentMode) {
                 Mode.YEAR_MODE -> yearData
                 else -> sourceForMonthMode[position]
             }
@@ -102,23 +99,8 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
         container.removeView(`object` as View)
     }
 
-    fun switchMode(mode: Int) {
-        if (mMode != mode) {
-            when (mode) {
-                Mode.YEAR_MODE -> {
-                    mMode = mode
-                    notifyDataSetChanged()
-                }
-                Mode.MONTH_MODE -> {
-                    mMode = mode
-                    notifyDataSetChanged()
-                }
-            }
-        }
-    }
-
     override fun getCount(): Int {
-        return when (mMode) {
+        return when (manager.currentMode) {
             Mode.YEAR_MODE -> 1
             else -> sourceForMonthMode.size
         }
@@ -135,25 +117,21 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
     }
 
     override fun onPageSelected(position: Int) {
-        if (mMode == Mode.MONTH_MODE) {
+        if (manager.currentMode == Mode.MONTH_MODE) {
             responseToClick = false
             manager.dispatchOnMonthModeSwipeToYear(sourceForMonthMode[position].year)
         }
     }
 
     override fun onModeChanged(mode: Int) {
-        switchMode(mode)
-    }
-
-    override fun onCategoryDateChanged(dateModel: DateModel) {
-
+        notifyDataSetChanged()
     }
 
     override fun onMonthModeSwipeToYear(year: String) {
         if (!responseToClick) {
             responseToClick = true
         } else {
-            if (mMode == Mode.MONTH_MODE) {
+            if (manager.currentMode == Mode.MONTH_MODE) {
                 val position = sourceForMonthMode.indexOfFirst {
                     it.year == year
                 }

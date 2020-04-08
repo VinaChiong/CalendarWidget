@@ -87,31 +87,36 @@ internal class DateWindowView: LinearLayout {
      * 初始化弹窗的Mode切换控件
      */
     private fun initRadioGroupModeCheck() {
-        rg_group.setOnCheckedChangeListener { group, checkedId ->
-            when (checkedId) {
-                R.id.rb_for_year -> {
-                    // 提取可用年列表
-                    rb_for_year.setTextColor(Color.WHITE)
-                    rb_for_month.setTextColor(Color.parseColor("#3399FF"))
-                    // 按年，只有单页，不需要切换Pager
-                    iv_arrow_left.visibility = View.INVISIBLE
-                    iv_arrow_right.visibility = View.INVISIBLE
-                    manager.dispatchOnModeChanged(Mode.YEAR_MODE) // dispatch event
-                }
-                R.id.rb_for_month -> {
-                    // 提取可用年月份列表
-                    rb_for_year.setTextColor(Color.parseColor("#3399FF"))
-                    rb_for_month.setTextColor(Color.WHITE)
-                    // 按月，可能多页，需要切换Pager
-                    iv_arrow_left.visibility = View.VISIBLE
-                    iv_arrow_right.visibility = View.VISIBLE
-                    manager.dispatchOnModeChanged(Mode.MONTH_MODE) // dispatch event
+        if (manager.canSwitchMode) {
+            rg_group.visibility = View.VISIBLE
+            rg_group.setOnCheckedChangeListener { group, checkedId ->
+                when (checkedId) {
+                    R.id.rb_for_year -> {
+                        // 提取可用年列表
+                        rb_for_year.setTextColor(Color.WHITE)
+                        rb_for_month.setTextColor(Color.parseColor("#3399FF"))
+                        // 按年，只有单页，不需要切换Pager
+                        iv_arrow_left.visibility = View.INVISIBLE
+                        iv_arrow_right.visibility = View.INVISIBLE
+                        manager.dispatchOnModeChanged(Mode.YEAR_MODE) // dispatch event
+                    }
+                    R.id.rb_for_month -> {
+                        // 提取可用年月份列表
+                        rb_for_year.setTextColor(Color.parseColor("#3399FF"))
+                        rb_for_month.setTextColor(Color.WHITE)
+                        // 按月，可能多页，需要切换Pager
+                        iv_arrow_left.visibility = View.VISIBLE
+                        iv_arrow_right.visibility = View.VISIBLE
+                        manager.dispatchOnModeChanged(Mode.MONTH_MODE) // dispatch event
+                    }
                 }
             }
-        }
-        when (manager.currentMode) {
-            Mode.YEAR_MODE -> rb_for_year.isChecked = true
-            Mode.MONTH_MODE -> rb_for_month.isChecked = true
+            when (manager.currentMode) {
+                Mode.YEAR_MODE -> rb_for_year.isChecked = true
+                Mode.MONTH_MODE -> rb_for_month.isChecked = true
+            }
+        } else {
+            rg_group.visibility = View.GONE
         }
     }
 
