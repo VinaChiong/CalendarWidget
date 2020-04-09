@@ -105,32 +105,42 @@ internal class ItemDateModelRecyclerAdapter(
             // 如果currentCheckedData is-not-null， 设置 checked = false
             currentCheckedData?.checked = false
         }
-        when (mDataMode) {
-            Mode.YEAR_MODE -> {
-                if (dateModel.mode == Mode.MONTH_MODE) {
-                    // 当前Adapter的是年份数据，且被点击的是月份数据
-                    // 遍历所有dateModel实例，保证只有year匹配时候，checked = true
-                    dateModelList.forEach {
-                        if (it.year == dateModel.year) {
-                            it.checked = true
-                            currentCheckedData = it
-                        } else {
-                            it.checked = false
-                        }
-                    }
-                }
-            }
-            Mode.MONTH_MODE -> {
-                currentCheckedData = if (dateModelList.contains(dateModel)) {
-                    // 属于当前Adapter的dateModel实例，缓存到currentCheckedData，用于下次反选
-                    dateModel.checked = true
-                    dateModel
-                } else {
-                    // 否则设置null
-                    null
-                }
+        // 不需要联动选中按月
+        dateModelList.forEach {
+            if (it == dateModel) {
+                it.checked = true
+                currentCheckedData = it
+            } else {
+                it.checked = false
             }
         }
+        // 以下代码是mDataMode = MONTH_MODE时候，联动选中年份item
+//        when (mDataMode) {
+//            Mode.YEAR_MODE -> {
+//                if (dateModel.mode == Mode.MONTH_MODE) {
+//                    // 当前Adapter的是年份数据，且被点击的是月份数据
+//                    // 遍历所有dateModel实例，保证只有year匹配时候，checked = true
+//                    dateModelList.forEach {
+//                        if (it.year == dateModel.year) {
+//                            it.checked = true
+//                            currentCheckedData = it
+//                        } else {
+//                            it.checked = false
+//                        }
+//                    }
+//                }
+//            }
+//            Mode.MONTH_MODE -> {
+//                currentCheckedData = if (dateModelList.contains(dateModel)) {
+//                    // 属于当前Adapter的dateModel实例，缓存到currentCheckedData，用于下次反选
+//                    dateModel.checked = true
+//                    dateModel
+//                } else {
+//                    // 否则设置null
+//                    null
+//                }
+//            }
+//        }
         notifyDataSetChanged()
     }
 }
