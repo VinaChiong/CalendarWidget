@@ -14,6 +14,7 @@ import android.widget.RelativeLayout
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.layout_date_popup_pager.view.*
 import me.vinachiong.datepopuppager.adapter.CategoryPagerAdapter
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 
 /**
@@ -137,6 +138,34 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
             windowAlphaAnimator.start()
             mPopupWindowDialog.dismiss()
         }
+    }
+
+    fun switchToYearMode() {
+        manager.dispatchSwitchToYearMode()?.run {
+            if (::categoryPagerAdapter.isInitialized) {
+                categoryPagerAdapter.checkDataChanged()
+            }
+        }
+    }
+
+    fun switchToMonthMode(date: String) {
+        manager.dispatchSwitchToMonthMode(date)?.run {
+            if (::categoryPagerAdapter.isInitialized) {
+                categoryPagerAdapter.checkDataChanged()
+            }
+        }
+    }
+
+    fun addOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
+        manager.addOnDateSelectedChangedListener(listener)
+    }
+
+    fun addOnDateSelectedChangedListener(listener: (DateModel) -> Unit) {
+        manager.addOnDateSelectedChangedListener(object: OnDateSelectedChangedListener {
+            override fun onCurrentDateModelChanged(dateModel: DateModel) {
+                listener.invoke(dateModel)
+            }
+        })
     }
 
     companion object {

@@ -1,5 +1,6 @@
 package me.vinachiong.datepopuppager
 
+import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
@@ -109,6 +110,11 @@ internal class PagerAdapterManager {
         }
     }
 
+    private var mOnDateSelectedChangedListener: OnDateSelectedChangedListener? = null
+    fun addOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
+        mOnDateSelectedChangedListener = listener
+    }
+
     /**
      * 移除所有监听器
      */
@@ -138,6 +144,38 @@ internal class PagerAdapterManager {
         }
     }
 
+    /**
+     * 触发'按月'情况下，显示年份变更事件
+     * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
+     */
+    fun dispatchSwitchToMonthMode(date: String): DateModel? {
+        return if (date.isKjqj()) {
+            categoryMonthAdapterList.find {
+                "${it.year}${it.month}" == date
+            }?.also {
+                dispatchOnCurrentDateModelChanged(it)
+            }
+        } else {
+            null
+        }
+    }
+
+    /**
+     * 触发'按月'情况下，显示年份变更事件
+     * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
+     */
+    fun dispatchSwitchToYearMode(): DateModel? {
+        return if (null != currentSelectData) {
+            categoryYearAdapterList.find {
+                it.year == currentSelectData!!.year
+            }?.also {
+                dispatchOnCurrentDateModelChanged(it)
+            }
+        } else {
+            null
+        }
+    }
+
     fun dispatchOnCheckChanged(dateModel: DateModel) {
         onItemDateModelCheckedChangedListeners.forEach { it.onCheckChanged(dateModel) }
     }
@@ -148,6 +186,8 @@ internal class PagerAdapterManager {
             dateModel.checked = true
             currentSelectData = dateModel
             currentMode = dateModel.mode
+            mOnDateSelectedChangedListener?.onCurrentDateModelChanged(dateModel)
         }
     }
+
 }

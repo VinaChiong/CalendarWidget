@@ -1,7 +1,5 @@
 package me.vinachiong.datepopuppager.model
 
-import me.vinachiong.datepopuppager.ItemStatus
-
 /**
  *
  *
@@ -14,7 +12,7 @@ data class DateModel (
     var mode: Int = -1,
     var enable: Boolean = false,
     var checked: Boolean = false
-) : ItemStatus {
+) {
     var extraLabel: String = ""
 
     fun label(): String =
@@ -24,9 +22,9 @@ data class DateModel (
             else -> extraLabel
         }
 
-    override fun isChecked(): Boolean = this.checked
+    fun isChecked(): Boolean = this.checked
 
-    override fun isEnabled(): Boolean = this.enable
+    fun isEnabled(): Boolean = this.enable
 
     override fun equals(other: Any?): Boolean {
         if (null == other || other !is DateModel || other.mode != this.mode) return false
