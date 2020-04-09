@@ -136,7 +136,7 @@ internal class PagerAdapterManager {
 
     /**
      * 触发'按月'情况下，显示年份变更事件
-     * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
+     * @param year
      */
     fun dispatchOnMonthModeSwipeToYear(year: String) {
         onDateWindowViewChangedListeners.forEach {
@@ -145,8 +145,8 @@ internal class PagerAdapterManager {
     }
 
     /**
-     * 触发'按月'情况下，显示年份变更事件
-     * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
+     * 显示指定的date日期，为按月模式
+     * @param date 'YYYYMM'
      */
     fun dispatchSwitchToMonthMode(date: String): DateModel? {
         return if (date.isKjqj()) {
@@ -161,11 +161,10 @@ internal class PagerAdapterManager {
     }
 
     /**
-     * 触发'按月'情况下，显示年份变更事件
-     * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
+     * 如果当前有选中的日期 & 可以显示按年，切换到按年模式显示
      */
     fun dispatchSwitchToYearMode(): DateModel? {
-        return if (null != currentSelectData) {
+        return if (null != currentSelectData && canSwitchMode) {
             categoryYearAdapterList.find {
                 it.year == currentSelectData!!.year
             }?.also {
