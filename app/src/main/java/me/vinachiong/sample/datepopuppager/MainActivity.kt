@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -12,12 +13,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        setSupportActionBar(toolbar)
         date_popup_pager.initDateModel("201605", "201905", "201801", true)
-//        setSupportActionBar(toolbar)
-//
-//        fab.setOnClickListener { view ->
-//            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
-//        }
+        date_popup_pager.addOnDateSelectedChangedListener{
+            Snackbar.make(date_popup_pager, "选中${it.label()}", Snackbar.LENGTH_LONG)
+                .show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -31,7 +32,14 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_switch_year -> {
+                date_popup_pager.switchToYearMode()
+                true
+            }
+            R.id.action_switch_month -> {
+                date_popup_pager.switchToMonthMode("201801")
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

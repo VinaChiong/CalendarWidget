@@ -3,8 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="me.vinachiong.datesticker.me.vinachiong.datepopuppager.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_switch_year"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="切换到按年"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_switch_month"
+        android:orderInCategory="100"
+        android:title="切换到月份"
         app:showAsAction="never" />
 </menu>
