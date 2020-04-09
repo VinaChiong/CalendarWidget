@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.WindowManager
 import android.widget.PopupWindow
-import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
 import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
 
@@ -25,13 +24,13 @@ internal class PopupWindowDialog(context: Context, private val manager: PagerAda
         setBackgroundDrawable(ColorDrawable(0x00000000))
     }
 
-    override fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
+    override fun onCheckChanged(dateModel: DateModel) {
         manager.dispatchOnCurrentDateModelChanged(dateModel)
         dismiss()
     }
 
     fun onShow() {
-        dateWindowView.checkDataChanged()
+        dateWindowView.checkDataChangedWhenShow()
     }
 
 }

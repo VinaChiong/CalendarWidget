@@ -32,10 +32,10 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         }
     }
     private val manager: PagerAdapterManager = PagerAdapterManager()
+    private lateinit var categoryPagerAdapter: CategoryPagerAdapter
     private lateinit var mContext: Activity
     private lateinit var mPopupWindowDialog: PopupWindowDialog
     private lateinit var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener
-
 
     constructor(context: Context?) : super(context) {
         initView()
@@ -49,7 +49,7 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
         initView()
     }
 
-    private lateinit var viewPagerAdapter: CategoryPagerAdapter
+
     /**
      *  DateSticker 初始化
      */
@@ -75,17 +75,17 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
     fun initDateModel(startDate: String, endDate: String, defaultDate: String, canSwitchMode: Boolean) {
         manager.initAdapterDate(startDate, endDate, defaultDate, canSwitchMode)
 
-        if (!::viewPagerAdapter.isInitialized) {
-            viewPagerAdapter = CategoryPagerAdapter(manager)
-            viewPagerAdapter.onItemClickListener = object: CategoryPagerAdapter.OnItemClickListener {
+        if (!::categoryPagerAdapter.isInitialized) {
+            categoryPagerAdapter = CategoryPagerAdapter(manager)
+            categoryPagerAdapter.onItemClickListener = object: CategoryPagerAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, data: DateModel) {
                     if (position != vp_date_popup_pager.currentItem) {
                         vp_date_popup_pager.currentItem = position
                     }
                 }
             }
-            vp_date_popup_pager.adapter = viewPagerAdapter
-            vp_date_popup_pager.addOnPageChangeListener(viewPagerAdapter)
+            vp_date_popup_pager.adapter = categoryPagerAdapter
+            vp_date_popup_pager.addOnPageChangeListener(categoryPagerAdapter)
             vp_date_popup_pager.apply {
                 val screenWidth = resources.displayMetrics.widthPixels
                 updateLayoutParams<ViewGroup.LayoutParams> {
@@ -97,13 +97,13 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
 
             left_holder.setOnClickListener {
                 val targetPos = vp_date_popup_pager.currentItem - 1
-                if (targetPos in 0 until viewPagerAdapter.count) {
+                if (targetPos in 0 until categoryPagerAdapter.count) {
                     vp_date_popup_pager.currentItem = targetPos
                 }
             }
             right_holder.setOnClickListener {
                 val targetPos = vp_date_popup_pager.currentItem + 1
-                if (targetPos in 0 until viewPagerAdapter.count) {
+                if (targetPos in 0 until categoryPagerAdapter.count) {
                     vp_date_popup_pager.currentItem = targetPos
                 }
             }
@@ -127,8 +127,8 @@ class DatePopupPager : RelativeLayout, PopupWindow.OnDismissListener {
 
     override fun onDismiss() {
         windowAlphaAnimator.start()
-        if (::viewPagerAdapter.isInitialized) {
-            viewPagerAdapter.checkDataChanged()
+        if (::categoryPagerAdapter.isInitialized) {
+            categoryPagerAdapter.checkDataChanged()
         }
     }
 

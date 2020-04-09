@@ -11,17 +11,17 @@ import me.vinachiong.datepopuppager.ItemStatus
 data class DateModel (
     var year: String = "",
     var month: String = "",
-    var type: Int = -1,
+    var mode: Int = -1,
     var enable: Boolean = false,
     var checked: Boolean = false
 ) : ItemStatus {
     var extraLabel: String = ""
 
     fun label(): String =
-        when (type){
+        when (mode){
             Mode.YEAR_MODE -> "${year}年"
             Mode.MONTH_MODE -> "${year}年${month}月"
-            else ->extraLabel
+            else -> extraLabel
         }
 
     override fun isChecked(): Boolean = this.checked
@@ -29,11 +29,11 @@ data class DateModel (
     override fun isEnabled(): Boolean = this.enable
 
     override fun equals(other: Any?): Boolean {
-        if (null == other || other !is DateModel) return false
+        if (null == other || other !is DateModel || other.mode != this.mode) return false
 
         if (other === this) return true
 
-        return when (type){
+        return when (mode){
             Mode.YEAR_MODE -> other.year == this.year
             else -> other.year == this.year && other.month == this.month
         }
@@ -42,7 +42,7 @@ data class DateModel (
     override fun hashCode(): Int {
         var result = year.hashCode()
         result = 31 * result + month.hashCode()
-        result = 31 * result + type
+        result = 31 * result + mode
         result = 31 * result + enable.hashCode()
         result = 31 * result + checked.hashCode()
         return result

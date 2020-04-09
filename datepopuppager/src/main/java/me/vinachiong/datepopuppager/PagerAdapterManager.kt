@@ -1,7 +1,5 @@
 package me.vinachiong.datepopuppager
 
-import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
-import me.vinachiong.datepopuppager.listener.OnDateSelectedChangedListener
 import me.vinachiong.datepopuppager.listener.OnDateWindowViewChangedListener
 import me.vinachiong.datepopuppager.listener.OnItemDateModelCheckedChangedListener
 import me.vinachiong.datepopuppager.model.DateModel
@@ -40,10 +38,6 @@ internal class PagerAdapterManager {
     /**
      * 选中的DateModel发生变化监听
      */
-    private val onDateSelectedChangedListeners = mutableListOf<OnDateSelectedChangedListener>()
-    /**
-     * 选中的DateModel发生变化监听
-     */
     private val onItemDateModelCheckedChangedListeners = mutableListOf<OnItemDateModelCheckedChangedListener>()
 
     fun initAdapterDate(startDate: String, endDate: String, defaultDate: String, canSwitchMode: Boolean = true) {
@@ -74,10 +68,10 @@ internal class PagerAdapterManager {
             val first = (startDate.toInt()).coerceAtLeast(januaryOfYear.toInt()) // 计算本年的月份开区间边界
             val last = (endDate.toInt()).coerceAtMost(decemberOfYear.toInt())  // 计算本年的月份闭区间边界
 
-            val isYearMatch = "$year" == currentYear && currentMode == Mode.YEAR_MODE
-
-            val yearData = DateModel("$year", "$last".month(), Mode.YEAR_MODE, true, isYearMatch)
-            if (isYearMatch) currentSelectData = yearData
+            val yearData = DateModel("$year", "$last".month(), Mode.YEAR_MODE, true,  "$year" == currentYear)
+            if (yearData.isChecked() && currentMode == Mode.YEAR_MODE) {
+                currentSelectData = yearData
+            }
             categoryYearAdapterList.add(yearData)
 
             val monthList = mutableListOf<DateModel>()
@@ -101,18 +95,8 @@ internal class PagerAdapterManager {
      */
     fun addOnDateWindowViewChangedListeners(listener: OnDateWindowViewChangedListener) {
         if (!onDateWindowViewChangedListeners.contains(listener)) {
-            onDateWindowViewChangedListeners.add(0, listener)
+            onDateWindowViewChangedListeners.add(listener)
         }
-    }
-
-    /**
-     * 添加监听器
-     * @param listener OnDateSelectedChangedListener
-     */
-    fun addOnDateSelectedChangedListener(listener: OnDateSelectedChangedListener) {
-//        if (!onDateSelectedChangedListeners.contains(listener)) {
-//            onDateSelectedChangedListeners.add(0, listener)
-//        }
     }
 
     /**
@@ -121,7 +105,7 @@ internal class PagerAdapterManager {
      */
     fun addOnItemDateModelCheckedChangedListeners(listener: OnItemDateModelCheckedChangedListener) {
         if (!onItemDateModelCheckedChangedListeners.contains(listener)) {
-            onItemDateModelCheckedChangedListeners.add(0, listener)
+            onItemDateModelCheckedChangedListeners.add(listener)
         }
     }
 
@@ -130,7 +114,6 @@ internal class PagerAdapterManager {
      */
     fun removeAllListeners() {
         onDateWindowViewChangedListeners.clear()
-        onDateSelectedChangedListeners.clear()
     }
 
     /**
@@ -138,8 +121,7 @@ internal class PagerAdapterManager {
      * @param mode [Mode.YEAR_MODE] 或者 [Mode.MONTH_MODE]
      */
     fun dispatchOnModeChanged(mode: Int) {
-        if (currentMode != mode && (mode == Mode.YEAR_MODE || mode == Mode.MONTH_MODE)) {
-            currentMode = mode
+        if (mode == Mode.YEAR_MODE || mode == Mode.MONTH_MODE) {
             onDateWindowViewChangedListeners.forEach {
                 it.onModeChanged(mode)
             }
@@ -156,17 +138,16 @@ internal class PagerAdapterManager {
         }
     }
 
-    fun dispatchOnCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter) {
-        onItemDateModelCheckedChangedListeners.forEach { it.onCheckChanged(dateModel, position, adapter) }
+    fun dispatchOnCheckChanged(dateModel: DateModel) {
+        onItemDateModelCheckedChangedListeners.forEach { it.onCheckChanged(dateModel) }
     }
 
     fun dispatchOnCurrentDateModelChanged(dateModel: DateModel) {
-        if (currentSelectData != dateModel) {
+        if (currentSelectData !== dateModel) {
             currentSelectData?.checked = false
             dateModel.checked = true
             currentSelectData = dateModel
-//            onDateSelectedChangedListeners.forEach { it.onCurrentDateModelChanged(dateModel) }
+            currentMode = dateModel.mode
         }
     }
-
 }

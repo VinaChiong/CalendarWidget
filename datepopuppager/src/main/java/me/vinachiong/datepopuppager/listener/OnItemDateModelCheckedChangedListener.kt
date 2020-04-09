@@ -1,6 +1,5 @@
 package me.vinachiong.datepopuppager.listener
 
-import me.vinachiong.datepopuppager.adapter.ItemDateModelRecyclerAdapter
 import me.vinachiong.datepopuppager.model.DateModel
 
 /**
@@ -10,7 +9,5 @@ import me.vinachiong.datepopuppager.model.DateModel
  * @version v1.0.0
  */
 internal interface OnItemDateModelCheckedChangedListener {
-
-
-    fun onCheckChanged(dateModel: DateModel, position: Int, adapter: ItemDateModelRecyclerAdapter)
+    fun onCheckChanged(dateModel: DateModel)
 }

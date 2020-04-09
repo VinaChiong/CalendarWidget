@@ -19,13 +19,18 @@ import me.vinachiong.datepopuppager.model.Mode
  * @author vina.chiong@gmail.com
  * @version v1.0.0
  */
-internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterManager) :
-    PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
-    // 按年：数据源
-    private val yearData: DateModel
+internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterManager) : PagerAdapter(), ViewPager.OnPageChangeListener, OnDateWindowViewChangedListener {
 
+    // 按年：数据源
+    private val dataSourceForYearMode: List<DateModel>
     // 按月：数据源
     private var sourceForMonthMode = mutableListOf<DateModel>()
+    private var mDataSource = mutableListOf<DateModel>()
+    private var mMode = -1
+
+    private var responseToClick = true
+    private lateinit var mHostView: ViewPager
+    var onItemClickListener: OnItemClickListener? = null
 
     init {
         // 弹窗的目录ViewPager, 按年，仅需要一个DateModel
@@ -33,20 +38,13 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
         val last = manager.categoryYearAdapterList.last()
         val yearLabel = DateModel()
         yearLabel.extraLabel = "${first.year}-${last.year}年"
-        yearData = yearLabel
+        dataSourceForYearMode = listOf(yearLabel)
         sourceForMonthMode.addAll(manager.categoryYearAdapterList)
+        switchDataSource(manager.currentMode)
 
         // 添加监听器，'按年'状态下，响应滑动切换年的事件
         manager.addOnDateWindowViewChangedListeners(this)
     }
-
-    private var responseToClick = true
-
-    // 点击监听
-    var onItemClickListener: OnItemClickListener? = null
-
-
-    private lateinit var mHostView: ViewPager
 
     override fun startUpdate(container: ViewGroup) {
         super.startUpdate(container)
@@ -66,10 +64,7 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
             it.setTextColor(Color.BLACK)
             it.textSize = 15f
 
-            val data = when (manager.currentMode) {
-                Mode.YEAR_MODE -> yearData
-                else -> sourceForMonthMode[position]
-            }
+            val data = mDataSource[position]
             it.text = data.label()
             it.setOnClickListener {
                 mHostView.currentItem = position
@@ -94,10 +89,7 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
     }
 
     override fun getCount(): Int {
-        return when (manager.currentMode) {
-            Mode.YEAR_MODE -> 1
-            else -> sourceForMonthMode.size
-        }
+        return mDataSource.size
     }
 
     interface OnItemClickListener {
@@ -111,21 +103,21 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
     }
 
     override fun onPageSelected(position: Int) {
-        if (manager.currentMode == Mode.MONTH_MODE) {
+        if (mMode == Mode.MONTH_MODE) {
             responseToClick = false
             manager.dispatchOnMonthModeSwipeToYear(sourceForMonthMode[position].year)
         }
     }
 
     override fun onModeChanged(mode: Int) {
-        notifyDataSetChanged()
+        switchDataSource(mode)
     }
 
     override fun onMonthModeSwipeToYear(year: String) {
         if (!responseToClick) {
             responseToClick = true
         } else {
-            if (manager.currentMode == Mode.MONTH_MODE) {
+            if (mMode == Mode.MONTH_MODE) {
                 val position = sourceForMonthMode.indexOfFirst {
                     it.year == year
                 }
@@ -136,26 +128,43 @@ internal class DateWindowCategoryPagerAdapter(private val manager: PagerAdapterM
         }
     }
 
-    fun checkDataChanged() {
-        if (::mHostView.isInitialized) {
-
-            notifyDataSetChanged()
-
-            // TODO 切换到
-            when (manager.currentMode) {
+    private fun switchDataSource(mode: Int) {
+        if (mMode != mode) {
+            mMode = mode
+            when (mode) {
                 Mode.YEAR_MODE -> {
-
+                    mDataSource.clear()
+                    mDataSource.addAll(dataSourceForYearMode)
+                    notifyDataSetChanged()
                 }
+                Mode.MONTH_MODE -> {
+                    mDataSource.clear()
+                    mDataSource.addAll(sourceForMonthMode)
+                    notifyDataSetChanged()
+                }
+            }
+        }
+    }
 
+    private fun showSelectedData() {
+        if (::mHostView.isInitialized) {
+            when (mMode) {
                 Mode.MONTH_MODE -> {
                     // 切换到对应页面
-                    val position =
-                        sourceForMonthMode.indexOfFirst { it == manager.currentSelectData }
-                    if (position > -1) {
-                        mHostView.currentItem = position
+                    manager.currentSelectData?.also { dateModel ->
+                        // 仅匹配year
+                        val position = sourceForMonthMode.indexOfFirst { it.year == dateModel.year }
+                        if (position > -1) {
+                            mHostView.currentItem = position
+                        }
                     }
                 }
             }
         }
+    }
+
+    fun checkDataChanged() {
+        switchDataSource(manager.currentMode)
+        showSelectedData()
     }
 }

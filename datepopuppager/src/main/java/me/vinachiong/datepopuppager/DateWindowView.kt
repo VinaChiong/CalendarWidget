@@ -22,8 +22,9 @@ internal class DateWindowView: LinearLayout {
 
     private lateinit var manager :PagerAdapterManager
     private lateinit var mContext: Activity
-    private lateinit var viewPagerAdapter: DateWindowCategoryPagerAdapter
+    private lateinit var dateWindowCategoryPagerAdapter: DateWindowCategoryPagerAdapter
     private lateinit var itemDetailPagerAdapter: ItemDetailPagerAdapter
+    private var mMode = -1
 
     constructor(context: Context?, manager: PagerAdapterManager) : super(context) {
         this.manager = manager
@@ -111,7 +112,10 @@ internal class DateWindowView: LinearLayout {
                     }
                 }
             }
-            when (manager.currentMode) {
+
+            // 初始化默认选中值
+            this.mMode = manager.currentMode
+            when (mMode) {
                 Mode.YEAR_MODE -> rb_for_year.isChecked = true
                 Mode.MONTH_MODE -> rb_for_month.isChecked = true
             }
@@ -125,11 +129,11 @@ internal class DateWindowView: LinearLayout {
      */
     private fun initCategoryViewPager() {
         // 弹窗的目录ViewPager, 按月，显示可选的年份
-        viewPagerAdapter = DateWindowCategoryPagerAdapter(manager)
+        dateWindowCategoryPagerAdapter = DateWindowCategoryPagerAdapter(manager)
 
         // 初始化ViewPager
-        vp_date_popup_pager.adapter = viewPagerAdapter
-        vp_date_popup_pager.addOnPageChangeListener(viewPagerAdapter)
+        vp_date_popup_pager.adapter = dateWindowCategoryPagerAdapter
+        vp_date_popup_pager.addOnPageChangeListener(dateWindowCategoryPagerAdapter)
         vp_date_popup_pager.apply {
             val screenWidth = resources.displayMetrics.widthPixels
             offscreenPageLimit = 2
@@ -138,20 +142,26 @@ internal class DateWindowView: LinearLayout {
 
         left_holder.setOnClickListener {
             val targetPos = vp_date_popup_pager.currentItem - 1
-            if (targetPos in 0 until viewPagerAdapter.count) {
+            if (targetPos in 0 until dateWindowCategoryPagerAdapter.count) {
                 vp_date_popup_pager.currentItem = targetPos
             }
         }
         right_holder.setOnClickListener {
             val targetPos = vp_date_popup_pager.currentItem + 1
-            if (targetPos in 0 until viewPagerAdapter.count) {
+            if (targetPos in 0 until dateWindowCategoryPagerAdapter.count) {
                 vp_date_popup_pager.currentItem = targetPos
             }
         }
     }
 
-    fun checkDataChanged() {
-        viewPagerAdapter.checkDataChanged()
+    fun checkDataChangedWhenShow() {
+        if (manager.canSwitchMode && rg_group.visibility == View.VISIBLE) {
+            when (manager.currentMode) {
+                Mode.YEAR_MODE -> rb_for_year.isChecked = true
+                Mode.MONTH_MODE -> rb_for_month.isChecked = true
+            }
+        }
+        dateWindowCategoryPagerAdapter.checkDataChanged()
         itemDetailPagerAdapter.checkDataChanged()
     }
 }
